@@ -1,4 +1,6 @@
 import React from "react";
+import { useState, useEffect } from "react";
+import axios from "axios";
 import {
   Shield,
   Settings,
@@ -12,7 +14,31 @@ import {
   User,
 } from "lucide-react";
 
-const AdminPage = () => {
+import { Pie } from "react-chartjs-2";
+import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
+
+ChartJS.register(ArcElement, Tooltip, Legend);
+
+const AdminDashboard = () => {
+  const [familyData, setFamilyData] = useState({
+    within5km: { length: 3 },
+    within10km: { length: 3 },
+    within50km: { length: 3 },
+  });
+  useEffect(() => {
+    axios
+      .get("http://localhost:8000/admin/dashboard", {
+        headers: { disasterId: "679b9d62376d9c767da2b160" },
+      })
+      .then((response) => {
+        setFamilyData(response.data.families);
+        console.log(response.data);
+      })
+      .catch((error) => {
+        console.error("Error fetching data:", error);
+      });
+  }, []);
+
   const stats = [
     {
       title: "Report Disaster",
@@ -66,6 +92,24 @@ const AdminPage = () => {
     },
   ];
 
+  // data for Pie Chart
+  const pieData = {
+    labels: ["Within 5km", "Within 10km", "Within 50km"],
+    datasets: [
+      {
+        label: "Statistics",
+        data: [
+          familyData.within5km.length,
+          familyData.within10km.length,
+          familyData.within50km.length,
+        ],
+        backgroundColor: ["#10b981", "#facc15", "#ef4444"],
+        borderWidth: 0,
+        spacing: 2,
+      },
+    ],
+  };
+
   return (
     <div className="min-h-screen bg-slate-900 p-6">
       {/* Header */}
@@ -95,8 +139,18 @@ const AdminPage = () => {
           <h2 className="text-xl text-gray-200 text-center mb-4">
             Graphical view
           </h2>
-          <div className="aspect-video bg-slate-800/80 rounded-lg">
+          <div className="aspect-video bg-slate-800/80 rounded-lg ">
             {/* Placeholder for graphs/charts */}
+            <div className="grid grid-cols-2  gap-4">
+              {/* Left Side - Pie Chart */}
+              <div className="bg-slate-800/80 rounded-lg flex items-center justify-center p-4 mt-7">
+                <Pie data={pieData} />
+              </div>
+              {/* Right Side - Placeholder */}
+              <div className="bg-slate-800/80 rounded-lg flex items-center justify-center p-4">
+                <p className="text-gray-400">Additional Insights or Graphs</p>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -128,4 +182,4 @@ const AdminPage = () => {
   );
 };
 
-export default AdminPage;
+export default AdminDashboard;

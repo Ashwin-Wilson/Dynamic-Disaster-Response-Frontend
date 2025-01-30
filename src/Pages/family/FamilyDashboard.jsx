@@ -9,7 +9,7 @@ import {
   AlertCircle,
 } from "lucide-react";
 
-const UserPage = () => {
+const FamilyDashboard = () => {
   const shelters = [
     {
       name: "Centeral Community Adoor",
@@ -135,4 +135,4 @@ const UserPage = () => {
   );
 };
 
-export default UserPage;
+export default FamilyDashboard;
