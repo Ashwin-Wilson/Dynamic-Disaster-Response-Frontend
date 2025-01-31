@@ -1,4 +1,3 @@
-import React from "react";
 import {
   Bell,
   Settings,
@@ -6,7 +5,6 @@ import {
   Grid,
   MapPin,
   AlertTriangle,
-  AlertCircle,
 } from "lucide-react";
 
 const FamilyDashboard = () => {

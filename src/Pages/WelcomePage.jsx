@@ -1,10 +1,14 @@
-import React from "react";
 import { User, Shield, Phone, Truck } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const WelcomePage = () => {
+  const navigate = useNavigate();
   const roles = [
     {
       title: "User login",
+      onClick: () => {
+        window.location.href = "/family-dashboard";
+      },
       description: "Login and get help",
       icon: User,
       iconBg: "bg-blue-500",
@@ -12,6 +16,13 @@ const WelcomePage = () => {
     },
     {
       title: "Admin login",
+
+      onClick: () =>
+        // Navigate to specific path
+        {
+          console.log("Admin login clicked");
+          navigate("/admin-dashboard");
+        },
       description: "System administrator",
       icon: Shield,
       iconBg: "bg-red-500",
