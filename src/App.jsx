@@ -1,17 +1,20 @@
-import { useState } from "react";
-import reactLogo from "./assets/react.svg";
-import viteLogo from "/vite.svg";
 import "./App.css";
 import WelcomePage from "./Pages/WelcomePage";
 import AdminDashboard from "./Pages/Admin/AdminDashboard";
+import FamilyDashboard from "./Pages/family/FamilyDashboard";
+
+import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 
 function App() {
-  const [count, setCount] = useState(0);
-
   return (
     <div>
-      {/* <WelcomePage /> */}
-      <AdminDashboard />
+      <Router>
+        <Routes>
+          <Route path="/" element={<WelcomePage />} />
+          <Route path="/admin-dashboard" element={<AdminDashboard />} />
+          <Route path="/family-dashboard" element={<FamilyDashboard />} />
+        </Routes>
+      </Router>
     </div>
   );
 }
