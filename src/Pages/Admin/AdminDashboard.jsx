@@ -1,5 +1,10 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
+
+//Components
+import FamilyTopologySort from "../../Components/FamilyTopologySort";
+import FamilyNetworkGraph from "../../Components/FamilyNetworkGraph";
+
 import {
   Shield,
   Settings,
@@ -16,6 +21,8 @@ import {
 import { Pie } from "react-chartjs-2";
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
 
+const BASE_URL = import.meta.env.VITE_BASE_URL;
+
 ChartJS.register(ArcElement, Tooltip, Legend);
 
 const AdminDashboard = () => {
@@ -24,14 +31,396 @@ const AdminDashboard = () => {
     within10km: { length: 3 },
     within50km: { length: 3 },
   });
+
+  const [disasterReport, setDisasterReport] = useState({
+    location: {
+      type: "Point",
+      coordinates: [77.209, 28.6139],
+    },
+    _id: "679b9d62376d9c767da2b160",
+    disaster_title: "Earthquake in City A",
+    description:
+      "A major earthquake with a magnitude of 7.8 hit City A, causing widespread damage to buildings, infrastructure, and loss of life. Many people are trapped under debris, and emergency services are being mobilized.",
+    admin_id: "679b344432012bfb4fe31a31",
+    intensity: "severe",
+    createdAt: "2025-01-30T15:40:18.607Z",
+    updatedAt: "2025-01-30T15:40:18.607Z",
+    __v: 0,
+  });
+  const [report, setReport] = useState({
+    disaster_report: {
+      location: {
+        type: "Point",
+        coordinates: [77.209, 28.6139],
+      },
+      _id: "679b9d62376d9c767da2b160",
+      disaster_title: "Earthquake in City A",
+      description:
+        "A major earthquake with a magnitude of 7.8 hit City A, causing widespread damage to buildings, infrastructure, and loss of life. Many people are trapped under debris, and emergency services are being mobilized.",
+      admin_id: "679b344432012bfb4fe31a31",
+      intensity: "severe",
+      createdAt: "2025-01-30T15:40:18.607Z",
+      updatedAt: "2025-01-30T15:40:18.607Z",
+      __v: 0,
+    },
+    families: {
+      within5km: [
+        {
+          address: {
+            location: {
+              type: "Point",
+              coordinates: [77.1975, 28.604],
+            },
+            street: "321 Maple St",
+            city: "Lakewood",
+            state: "California",
+            pincode: "90723",
+            proximity_to_risks: [],
+          },
+          housing: {
+            type: "permanent",
+          },
+          medical_requirements: {
+            equipment_details: [],
+          },
+          disaster_preparedness: {
+            emergency_contacts: [],
+          },
+          _id: "679ba079376d9c767da2b16e",
+          family_name: "Verma",
+          email: "verma@example.com",
+          password:
+            "$2b$10$KpwKnnTCIIHtl2ssnHl.qOffXkaESd.sePVVCD2.hYbtul/cspOhK",
+          role: "Head",
+          total_members: 4,
+          family_members: [],
+          disaster_history: [],
+          last_updated: "2025-01-30T15:53:29.448Z",
+          createdAt: "2025-01-30T15:53:29.448Z",
+          updatedAt: "2025-01-30T15:53:29.448Z",
+          __v: 0,
+        },
+        {
+          address: {
+            location: {
+              type: "Point",
+              coordinates: [77.2005, 28.617],
+            },
+            street: "654 Pine Blvd",
+            city: "Lakewood",
+            state: "California",
+            pincode: "90723",
+            proximity_to_risks: [],
+          },
+          housing: {
+            type: "permanent",
+          },
+          medical_requirements: {
+            equipment_details: [],
+          },
+          disaster_preparedness: {
+            emergency_contacts: [],
+          },
+          _id: "679ba097376d9c767da2b171",
+          family_name: "Reddy",
+          email: "reddy@example.com",
+          password:
+            "$2b$10$GEPp039FW7y.C69LxEexbebd6NPQ54mVW7BqMgXiZUmPsTWL2KhHK",
+          role: "Head",
+          total_members: 5,
+          family_members: [],
+          disaster_history: [],
+          last_updated: "2025-01-30T15:53:59.158Z",
+          createdAt: "2025-01-30T15:53:59.159Z",
+          updatedAt: "2025-01-30T15:53:59.159Z",
+          __v: 0,
+        },
+        {
+          address: {
+            location: {
+              type: "Point",
+              coordinates: [77.2075, 28.611],
+            },
+            street: "123 Main St",
+            city: "Lakewood",
+            state: "California",
+            pincode: "90723",
+            proximity_to_risks: [],
+          },
+          housing: {
+            type: "permanent",
+          },
+          medical_requirements: {
+            equipment_details: [],
+          },
+          disaster_preparedness: {
+            emergency_contacts: [],
+          },
+          _id: "679b9ebd376d9c767da2b165",
+          family_name: "Singh",
+          email: "singh@example.com",
+          password:
+            "$2b$10$EylEeO1HHKOfjBx1VjJUden7BnARpIQxXBKY4/m1NkvRXLaYY.H2.",
+          role: "Head",
+          total_members: 4,
+          family_members: [],
+          disaster_history: [],
+          last_updated: "2025-01-30T15:46:05.992Z",
+          createdAt: "2025-01-30T15:46:05.993Z",
+          updatedAt: "2025-01-30T15:46:05.993Z",
+          __v: 0,
+        },
+        {
+          address: {
+            location: {
+              type: "Point",
+              coordinates: [77.2105, 28.6125],
+            },
+            street: "789 Pine Rd",
+            city: "Lakewood",
+            state: "California",
+            pincode: "90723",
+            proximity_to_risks: [],
+          },
+          housing: {
+            type: "permanent",
+          },
+          medical_requirements: {
+            equipment_details: [],
+          },
+          disaster_preparedness: {
+            emergency_contacts: [],
+          },
+          _id: "679b9edd376d9c767da2b16b",
+          family_name: "Kumar",
+          email: "kumar@example.com",
+          password:
+            "$2b$10$Vy9ybpv1ee.eMCH6waWJX.L9xenMwWthBD8SGpOE4c0Hbfo.d/CEK",
+          role: "Head",
+          total_members: 5,
+          family_members: [],
+          disaster_history: [],
+          last_updated: "2025-01-30T15:46:37.163Z",
+          createdAt: "2025-01-30T15:46:37.164Z",
+          updatedAt: "2025-01-30T15:46:37.164Z",
+          __v: 0,
+        },
+        {
+          address: {
+            location: {
+              type: "Point",
+              coordinates: [77.2085, 28.6142],
+            },
+            street: "456 Oak Ave",
+            city: "Lakewood",
+            state: "California",
+            pincode: "90723",
+            proximity_to_risks: [],
+          },
+          housing: {
+            type: "permanent",
+          },
+          medical_requirements: {
+            equipment_details: [],
+          },
+          disaster_preparedness: {
+            emergency_contacts: [],
+          },
+          _id: "679b9ed0376d9c767da2b168",
+          family_name: "Patel",
+          email: "patel@example.com",
+          password:
+            "$2b$10$emMAztp0s8SekADERYj3IOajqr92U0DKiz/SY0IBVAWr8gL.JcRZy",
+          role: "Head",
+          total_members: 3,
+          family_members: [],
+          disaster_history: [],
+          last_updated: "2025-01-30T15:46:24.766Z",
+          createdAt: "2025-01-30T15:46:24.766Z",
+          updatedAt: "2025-01-30T15:46:24.766Z",
+          __v: 0,
+        },
+        {
+          address: {
+            location: {
+              type: "Point",
+              coordinates: [77.1905, 28.6095],
+            },
+            street: "987 Oak Dr",
+            city: "Lakewood",
+            state: "California",
+            pincode: "90723",
+            proximity_to_risks: [],
+          },
+          housing: {
+            type: "permanent",
+          },
+          medical_requirements: {
+            equipment_details: [],
+          },
+          disaster_preparedness: {
+            emergency_contacts: [],
+          },
+          _id: "679ba0a2376d9c767da2b174",
+          family_name: "Sharma",
+          email: "sharma@example.com",
+          password:
+            "$2b$10$sWaZVs9B1cyn56ZyK1.0/.vbAxNZXnH7BujQkL9nWqS2W4CPtNplq",
+          role: "Head",
+          total_members: 6,
+          family_members: [],
+          disaster_history: [],
+          last_updated: "2025-01-30T15:54:10.533Z",
+          createdAt: "2025-01-30T15:54:10.534Z",
+          updatedAt: "2025-01-30T15:54:10.534Z",
+          __v: 0,
+        },
+      ],
+      within10km: [
+        {
+          address: {
+            location: {
+              type: "Point",
+              coordinates: [77.12, 28.6139],
+            },
+            street: "123 Silver St",
+            city: "Lakewood",
+            state: "California",
+            pincode: "90724",
+            proximity_to_risks: [
+              {
+                risk_type: "river",
+                distance: 500,
+                details:
+                  "Nearby river poses a flood risk during heavy rainfall",
+                _id: "679bb6b317d56eb388ca63e3",
+              },
+            ],
+          },
+          housing: {
+            type: "permanent",
+          },
+          medical_requirements: {
+            equipment_details: [],
+          },
+          disaster_preparedness: {
+            emergency_contacts: [],
+          },
+          _id: "679bb6b317d56eb388ca63e2",
+          family_name: "what",
+          email: "ash@example.com",
+          password:
+            "$2b$10$M1aCMb1F3ulyc/a0Cvwn/eJhCgc63QtieVR65.X4rdxATc5CmngHq",
+          role: "Head",
+          total_members: 4,
+          family_members: [],
+          disaster_history: [],
+          last_updated: "2025-01-30T17:28:19.217Z",
+          createdAt: "2025-01-30T17:28:19.220Z",
+          updatedAt: "2025-01-30T17:28:19.220Z",
+          __v: 0,
+        },
+      ],
+      within50km: [
+        {
+          address: {
+            location: {
+              type: "Point",
+              coordinates: [77.5, 28.6139],
+            },
+            street: "123 Silver St",
+            city: "Lakewood",
+            state: "California",
+            pincode: "90724",
+            proximity_to_risks: [
+              {
+                risk_type: "river",
+                distance: 500,
+                details:
+                  "Nearby river poses a flood risk during heavy rainfall",
+                _id: "679baf930e371e1b577e2660",
+              },
+            ],
+          },
+          housing: {
+            type: "permanent",
+          },
+          medical_requirements: {
+            equipment_details: [],
+          },
+          disaster_preparedness: {
+            emergency_contacts: [],
+          },
+          _id: "679baf930e371e1b577e265f",
+          family_name: "Gupta",
+          email: "gupta@example.com",
+          password:
+            "$2b$10$2PU.NgJuTisb.A7aacZQTOlxNPbJWNCQuEfF55Jp0v6jya5yagtDm",
+          role: "Head",
+          total_members: 4,
+          family_members: [],
+          disaster_history: [],
+          last_updated: "2025-01-30T16:57:55.876Z",
+          createdAt: "2025-01-30T16:57:55.879Z",
+          updatedAt: "2025-01-30T16:57:55.879Z",
+          __v: 0,
+        },
+        {
+          address: {
+            location: {
+              type: "Point",
+              coordinates: [77.12, 28.6139],
+            },
+            street: "123 Silver St",
+            city: "Lakewood",
+            state: "California",
+            pincode: "90724",
+            proximity_to_risks: [
+              {
+                risk_type: "river",
+                distance: 500,
+                details:
+                  "Nearby river poses a flood risk during heavy rainfall",
+                _id: "679bb6b317d56eb388ca63e3",
+              },
+            ],
+          },
+          housing: {
+            type: "permanent",
+          },
+          medical_requirements: {
+            equipment_details: [],
+          },
+          disaster_preparedness: {
+            emergency_contacts: [],
+          },
+          _id: "679bb6b317d56eb388ca63e2",
+          family_name: "what",
+          email: "ash@example.com",
+          password:
+            "$2b$10$M1aCMb1F3ulyc/a0Cvwn/eJhCgc63QtieVR65.X4rdxATc5CmngHq",
+          role: "Head",
+          total_members: 4,
+          family_members: [],
+          disaster_history: [],
+          last_updated: "2025-01-30T17:28:19.217Z",
+          createdAt: "2025-01-30T17:28:19.220Z",
+          updatedAt: "2025-01-30T17:28:19.220Z",
+          __v: 0,
+        },
+      ],
+    },
+  });
+
   useEffect(() => {
     axios
-      .get("http://localhost:8000/admin/dashboard", {
+      .get(`${BASE_URL}/admin/dashboard`, {
         headers: { disasterId: "679b9d62376d9c767da2b160" },
       })
       .then((response) => {
         setFamilyData(response.data.families);
-        console.log(response.data);
+        setDisasterReport(response.data.disaster_report);
+        setReport(response.data);
       })
       .catch((error) => {
         console.error("Error fetching data:", error);
@@ -102,7 +491,7 @@ const AdminDashboard = () => {
           familyData.within10km.length,
           familyData.within50km.length,
         ],
-        backgroundColor: ["#10b981", "#facc15", "#ef4444"],
+        backgroundColor: ["#ef4444", "#facc15", "#4caf50"],
         borderWidth: 0,
         spacing: 2,
       },
@@ -138,16 +527,17 @@ const AdminDashboard = () => {
           <h2 className="text-xl text-gray-200 text-center mb-4">
             Graphical view
           </h2>
-          <div className="aspect-video bg-slate-800/80 rounded-lg ">
+          <div className="aspect-video bg-slate-900 rounded-lg ">
             {/* Placeholder for graphs/charts */}
             <div className="grid grid-cols-2  gap-4">
               {/* Left Side - Pie Chart */}
-              <div className="bg-slate-800/80 rounded-lg flex items-center justify-center p-4 mt-7">
+              <div className="bg-slate-900 rounded-lg flex items-center justify-center p-4 mt-7">
                 <Pie data={pieData} />
               </div>
               {/* Right Side - Placeholder */}
-              <div className="bg-slate-800/80 rounded-lg flex items-center justify-center p-4">
-                <p className="text-gray-400">Additional Insights or Graphs</p>
+              <div className="bg-slate-900 rounded-lg flex items-center justify-center p-4">
+                {/* <FamilyTopologySort disasterData={report} /> */}
+                <FamilyNetworkGraph disasterData={report} />
               </div>
             </div>
           </div>
