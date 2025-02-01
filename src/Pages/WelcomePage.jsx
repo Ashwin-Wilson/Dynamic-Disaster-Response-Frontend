@@ -68,7 +68,7 @@ const WelcomePage = () => {
             </div>
             <div>
               <h2 className="text-xl text-white mb-2">Volunteer</h2>
-              <p className="text-gray-400">Help</p>
+              <p className="text-gray-400">Help others</p>
             </div>
           </div>
         </div>
@@ -86,7 +86,7 @@ const WelcomePage = () => {
             </div>
             <div>
               <h2 className="text-xl text-white mb-2">Driver</h2>
-              <p className="text-gray-400">Login and get help</p>
+              <p className="text-gray-400">Driver login</p>
             </div>
           </div>
         </div>

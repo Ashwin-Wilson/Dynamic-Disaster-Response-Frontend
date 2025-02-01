@@ -522,7 +522,7 @@ const AdminDashboard = () => {
           <LogOut
             className="w-6 h-6 text-gray-400 cursor-pointer"
             onClick={() => {
-              console.log("Admin login clicked");
+              console.log("Admin logout clicked");
               navigate("/");
             }}
           />
