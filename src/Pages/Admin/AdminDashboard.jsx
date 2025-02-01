@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 //Components
 import FamilyTopologySort from "../../Components/FamilyTopologySort";
@@ -26,6 +27,7 @@ const BASE_URL = import.meta.env.VITE_BASE_URL;
 ChartJS.register(ArcElement, Tooltip, Legend);
 
 const AdminDashboard = () => {
+  const navigate = useNavigate();
   const [familyData, setFamilyData] = useState({
     within5km: { length: 3 },
     within10km: { length: 3 },
@@ -517,7 +519,13 @@ const AdminDashboard = () => {
           </div>
           <Settings className="w-6 h-6 text-gray-400 cursor-pointer" />
           <Bell className="w-6 h-6 text-gray-400 cursor-pointer" />
-          <LogOut className="w-6 h-6 text-gray-400 cursor-pointer" />
+          <LogOut
+            className="w-6 h-6 text-gray-400 cursor-pointer"
+            onClick={() => {
+              console.log("Admin login clicked");
+              navigate("/");
+            }}
+          />
         </div>
       </div>
 

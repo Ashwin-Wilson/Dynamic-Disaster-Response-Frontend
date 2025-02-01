@@ -1,13 +1,12 @@
-import {
-  Bell,
-  Settings,
-  User,
-  Grid,
-  MapPin,
-  AlertTriangle,
-} from "lucide-react";
+import { useState } from "react";
+import { Bell, LogOut, User, Grid, MapPin, AlertTriangle } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import UserDataForm from "./UserDataForm";
 
 const FamilyDashboard = () => {
+  const navigate = useNavigate();
+  const [isFormOpen, setIsFormOpen] = useState(false);
+
   const shelters = [
     {
       name: "Centeral Community Adoor",
@@ -37,9 +36,14 @@ const FamilyDashboard = () => {
           <User className="w-6 h-6 text-blue-500" />
           <h1 className="text-2xl text-gray-200">User Dashboard</h1>
         </div>
-        <button className="text-gray-400">
-          <Settings className="w-6 h-6" />
-        </button>
+
+        <LogOut
+          className="w-6 h-6 text-gray-400 cursor-pointer"
+          onClick={() => {
+            console.log("Admin login clicked");
+            navigate("/");
+          }}
+        />
       </div>
 
       {/* User Profile Card */}
@@ -63,10 +67,6 @@ const FamilyDashboard = () => {
             <User className="w-5 h-5" />
             <span>Profile</span>
           </button>
-          <button className="flex items-center space-x-3 text-gray-300 hover:text-gray-100">
-            <Settings className="w-5 h-5" />
-            <span>Settings</span>
-          </button>
         </div>
       </div>
 
@@ -80,7 +80,10 @@ const FamilyDashboard = () => {
           <p className="text-gray-400">Find safe location near you</p>
         </div>
 
-        <div className="bg-slate-800/50 rounded-lg p-6">
+        <div
+          className="bg-slate-800/50 rounded-lg p-6 cursor-pointer"
+          onClick={() => setIsFormOpen(true)}
+        >
           <div className="flex items-center space-x-3 mb-4">
             <AlertTriangle className="w-6 h-6 text-red-500" />
             <h3 className="text-gray-200 text-lg">Report Disaster</h3>
@@ -129,6 +132,9 @@ const FamilyDashboard = () => {
           ))}
         </div>
       </div>
+
+      {/* User Data Form Modal */}
+      <UserDataForm isOpen={isFormOpen} onClose={() => setIsFormOpen(false)} />
     </div>
   );
 };
