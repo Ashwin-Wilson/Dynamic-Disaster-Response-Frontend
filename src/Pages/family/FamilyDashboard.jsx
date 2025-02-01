@@ -40,7 +40,7 @@ const FamilyDashboard = () => {
         <LogOut
           className="w-6 h-6 text-gray-400 cursor-pointer"
           onClick={() => {
-            console.log("Admin login clicked");
+            console.log("User logout clicked");
             navigate("/");
           }}
         />
@@ -53,7 +53,7 @@ const FamilyDashboard = () => {
             <User className="w-6 h-6 text-gray-400" />
           </div>
           <div>
-            <h2 className="text-gray-200 text-lg">Vipin</h2>
+            <h2 className="text-gray-200 text-lg">Aparna</h2>
             <p className="text-gray-400 text-sm">example@gmail.com</p>
           </div>
         </div>

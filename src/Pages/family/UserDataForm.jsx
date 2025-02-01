@@ -1,5 +1,5 @@
-import { X } from "lucide-react";
 import { useState } from "react";
+import { X } from "lucide-react";
 
 const UserDataForm = ({ isOpen, onClose }) => {
   const [formData, setFormData] = useState({
