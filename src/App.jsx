@@ -5,17 +5,13 @@ import FamilyDashboard from "./Pages/family/FamilyDashboard";
 
 import FamilySignUp from "./Pages/family/FamilySignUp";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
-import FamilyPriorityList from "./Components/FamilyPriorityList";
 
 function App() {
   return (
     <div>
       <Router>
         <Routes>
-          {/* <Route path="/" element={<WelcomePage />} /> */}
-
-          <Route path="/" element={<FamilyPriorityList />} />
-
+          <Route path="/" element={<WelcomePage />} />
           <Route path="/admin-dashboard" element={<AdminDashboard />} />
           <Route path="/family/signup" element={<FamilySignUp />} />
           <Route path="/family/dashboard" element={<FamilyDashboard />} />
