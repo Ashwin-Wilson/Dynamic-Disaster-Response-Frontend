@@ -7,7 +7,8 @@ import FamilyRegistrationForm from "./FamilyRegistrationForm";
 const FamilyDashboard = () => {
   const navigate = useNavigate();
   const [isFormOpen, setIsFormOpen] = useState(false);
-
+  const familyName = localStorage.getItem("familyName");
+  const familyEmail = localStorage.getItem("familyEmail");
   const shelters = [
     {
       name: "Centeral Community Adoor",
@@ -54,8 +55,10 @@ const FamilyDashboard = () => {
             <User className="w-6 h-6 text-gray-400" />
           </div>
           <div>
-            <h2 className="text-gray-200 text-lg">Aparna</h2>
-            <p className="text-gray-400 text-sm">example@gmail.com</p>
+            <h2 className="text-gray-200 text-lg">{familyName ?? "Aparna"}</h2>
+            <p className="text-gray-400 text-sm">
+              {familyEmail ?? "aparna@gmail.com"}
+            </p>
           </div>
         </div>
 
@@ -87,9 +90,9 @@ const FamilyDashboard = () => {
         >
           <div className="flex items-center space-x-3 mb-4">
             <AlertTriangle className="w-6 h-6 text-red-500" />
-            <h3 className="text-gray-200 text-lg">Report Disaster</h3>
+            <h3 className="text-gray-200 text-lg">Family register</h3>
           </div>
-          <p className="text-gray-400">Report incidents in your area</p>
+          <p className="text-gray-400">Register your family details</p>
         </div>
 
         <div className="bg-slate-800/50 rounded-lg p-6">

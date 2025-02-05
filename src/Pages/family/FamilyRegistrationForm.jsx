@@ -1,12 +1,11 @@
 import { useState } from "react";
 import { X, Trash2 } from "lucide-react";
+import axios from "axios";
+
+const BASE_URL = import.meta.env.VITE_BASE_URL;
 
 const FamilyRegistrationForm = ({ isOpen, onClose }) => {
   const [formData, setFormData] = useState({
-    family_name: "",
-    email: "",
-    password: "",
-    role: "head",
     family_members: [
       {
         name: "",
@@ -138,13 +137,18 @@ const FamilyRegistrationForm = ({ isOpen, onClose }) => {
   };
 
   const handleSubmit = (e) => {
+    axios.post(`${BASE_URL}/family/update`, {
+      token: localStorage.getItem("token"),
+      updates: formData,
+    });
+    // console.log(e);
     e.preventDefault();
     console.log("Form submitted:", formData);
     onClose();
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 ">
       <div className="bg-slate-900 rounded-lg w-full max-w-4xl mx-4 max-h-[90vh] overflow-y-auto">
         <div className="p-6">
           <div className="flex justify-between items-center mb-6">
@@ -160,58 +164,6 @@ const FamilyRegistrationForm = ({ isOpen, onClose }) => {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-gray-200 mb-2">Family Name</label>
-                <input
-                  type="text"
-                  required
-                  className="w-full bg-slate-800/50 border border-slate-700 rounded-md p-2 text-white"
-                  value={formData.family_name}
-                  onChange={(e) =>
-                    setFormData({ ...formData, family_name: e.target.value })
-                  }
-                />
-              </div>
-              <div>
-                <label className="block text-gray-200 mb-2">Email</label>
-                <input
-                  type="email"
-                  required
-                  className="w-full bg-slate-800/50 border border-slate-700 rounded-md p-2 text-white"
-                  value={formData.email}
-                  onChange={(e) =>
-                    setFormData({ ...formData, email: e.target.value })
-                  }
-                />
-              </div>
-              <div>
-                <label className="block text-gray-200 mb-2">Password</label>
-                <input
-                  type="password"
-                  required
-                  className="w-full bg-slate-800/50 border border-slate-700 rounded-md p-2 text-white"
-                  value={formData.password}
-                  onChange={(e) =>
-                    setFormData({ ...formData, password: e.target.value })
-                  }
-                />
-              </div>
-              <div>
-                <label className="block text-gray-200 mb-2">Role</label>
-                <select
-                  className="w-full bg-slate-800/50 border border-slate-700 rounded-md p-2 text-white"
-                  value={formData.role}
-                  onChange={(e) =>
-                    setFormData({ ...formData, role: e.target.value })
-                  }
-                >
-                  <option value="head">Head</option>
-                  <option value="member">Member</option>
-                </select>
-              </div>
-            </div>
-
             <div>
               <h3 className="text-xl text-white mb-4">Family Members</h3>
               {formData.family_members.map((member, index) => (
