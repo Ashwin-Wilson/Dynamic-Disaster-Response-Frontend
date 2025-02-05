@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Bell, LogOut, User, Grid, MapPin, AlertTriangle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import UserDataForm from "./UserDataForm";
+import FamilyRegistrationForm from "./FamilyRegistrationForm";
 
 const FamilyDashboard = () => {
   const navigate = useNavigate();
@@ -134,7 +135,10 @@ const FamilyDashboard = () => {
       </div>
 
       {/* User Data Form Modal */}
-      <UserDataForm isOpen={isFormOpen} onClose={() => setIsFormOpen(false)} />
+      <FamilyRegistrationForm
+        isOpen={isFormOpen}
+        onClose={() => setIsFormOpen(false)}
+      />
     </div>
   );
 };
