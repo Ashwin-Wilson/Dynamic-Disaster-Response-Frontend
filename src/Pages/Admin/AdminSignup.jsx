@@ -38,10 +38,11 @@ const AdminSignup = () => {
 
     try {
       const response = await axios.post(`${BASE_URL}/admin/signup`, {
-        name: formData.name,
+        first_name: formData.first_name,
+        last_name: formData.last_name,
         email: formData.email,
         password: formData.password,
-        role: formData.role,
+        role: "admin",
       });
 
       // Store token and navigate
@@ -101,14 +102,35 @@ const AdminSignup = () => {
                   htmlFor="name"
                   className="block text-sm font-medium text-gray-300 mb-2"
                 >
-                  Full Name
+                  First Name
                 </label>
                 <input
-                  id="name"
-                  name="name"
+                  id="first_name"
+                  name="first_name"
                   type="text"
                   required
-                  value={formData.name}
+                  value={formData.first_name}
+                  onChange={handleChange}
+                  className="w-full px-4 py-3 bg-white/10 border border-gray-600 text-white rounded-lg 
+                           focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent 
+                           placeholder-gray-500 backdrop-blur-sm transition-all"
+                  placeholder="Admin Name"
+                />
+              </div>
+
+              <div>
+                <label
+                  htmlFor="name"
+                  className="block text-sm font-medium text-gray-300 mb-2"
+                >
+                  Last Name
+                </label>
+                <input
+                  id="last_name"
+                  name="last_name"
+                  type="text"
+                  required
+                  value={formData.last_name}
                   onChange={handleChange}
                   className="w-full px-4 py-3 bg-white/10 border border-gray-600 text-white rounded-lg 
                            focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent 
