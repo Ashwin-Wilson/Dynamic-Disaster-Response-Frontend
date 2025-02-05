@@ -38,7 +38,7 @@ const WelcomePage = () => {
         <div
           onClick={() => {
             console.log("Admin login clicked");
-            navigate("/admin-dashboard");
+            navigate("/Admin/login");
           }}
           className="bg-slate-800/50 rounded-lg p-6 cursor-pointer
                     hover:bg-slate-800/70 transition-all duration-300
