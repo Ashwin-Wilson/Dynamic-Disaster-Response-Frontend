@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 //Components
 import FamilyTopologySort from "../../Components/FamilyTopologySort";
 import FamilyNetworkGraph from "../../Components/FamilyNetworkGraph";
-
+import FamilyListView from "../../Components/FamilyPriorityList";
 import {
   Shield,
   Settings,
@@ -550,7 +550,6 @@ const AdminDashboard = () => {
             </div>
           </div>
         </div>
-
         {/* Stats Sidebar */}
         <div className="w-64 space-y-4">
           {stats.map((stat, index) => (
@@ -575,6 +574,7 @@ const AdminDashboard = () => {
           ))}
         </div>
       </div>
+      <FamilyListView />
     </div>
   );
 };

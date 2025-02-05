@@ -47,6 +47,8 @@ const FamilySignUp = () => {
       })
       .then((response) => {
         localStorage.setItem("token", response.data.token);
+        localStorage.setItem("familyName", username);
+        localStorage.setItem("familyEmail", email);
         navigate("/family/dashboard");
       })
       .catch((error) => {
@@ -144,31 +146,6 @@ const FamilySignUp = () => {
               className="w-full px-3 py-2 text-gray-700 bg-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
             />
-          </div>
-
-          <div className="mb-6">
-            <label
-              className="block text-white text-sm font-bold mb-2"
-              htmlFor="username"
-            >
-              Total Member
-            </label>
-            <select
-              className="bg-gray-700 text-white w-full py-2 px-3 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-              value={totalMembers}
-              onChange={(e) => setTotalMemebers(e.target.value)}
-            >
-              <option value="1">1</option>
-              <option value="2">2</option>
-              <option value="3">3</option>
-              <option value="4">4</option>
-              <option value="5">5</option>
-              <option value="6">6</option>
-              <option value="7">7</option>
-              <option value="8">8</option>
-              <option value="9">9</option>
-              <option value="10">10</option>
-            </select>
           </div>
 
           <div className="space-y-4 mb-4">
