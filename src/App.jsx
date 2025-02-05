@@ -3,6 +3,7 @@ import WelcomePage from "./Pages/WelcomePage";
 import AdminDashboard from "./Pages/Admin/AdminDashboard";
 import FamilyDashboard from "./Pages/family/FamilyDashboard";
 
+import FamilySignUp from "./Pages/family/FamilySignUp";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 
 function App() {
@@ -12,7 +13,8 @@ function App() {
         <Routes>
           <Route path="/" element={<WelcomePage />} />
           <Route path="/admin-dashboard" element={<AdminDashboard />} />
-          <Route path="/family-dashboard" element={<FamilyDashboard />} />
+          <Route path="/family/signup" element={<FamilySignUp />} />
+          <Route path="/family/dashboard" element={<FamilyDashboard />} />
         </Routes>
       </Router>
     </div>
