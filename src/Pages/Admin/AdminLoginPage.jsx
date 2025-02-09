@@ -4,7 +4,7 @@ import { Shield, ChevronLeft, Lock } from "lucide-react";
 import axios from "axios";
 
 // Update this Ashwin ji wasent this to 8000 port something??
-const BASE_URL = "http://localhost:8000";
+const BASE_URL = import.meta.env.VITE_BASE_URL;
 
 const AdminLogin = () => {
   const navigate = useNavigate();
@@ -28,15 +28,10 @@ const AdminLogin = () => {
     setError("");
 
     try {
-      const response = await axios.post(
-        `${BASE_URL}/api/admin/login`,
-        formData,
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      const response = await axios.post(`${BASE_URL}/admin/login`, {
+        email: formData.email,
+        password: formData.password,
+      });
 
       if (response.data && response.data.token) {
         // Store the token and admin details
@@ -52,7 +47,7 @@ const AdminLogin = () => {
       // Pro Error Catcher
       if (error.response) {
         // Server responded with an error
-        setError(error.response.data?.message || "Invalid credentials");
+        setError(error.message || "Invalid credentials");
       } else if (error.request) {
         // Request was made but no response
         setError("Cannot connect to server. Please try again later.");

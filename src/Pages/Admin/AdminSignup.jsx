@@ -28,7 +28,6 @@ const AdminSignup = () => {
     e.preventDefault();
     setIsLoading(true);
     setError("");
-
     // Password validation
     if (formData.password !== formData.confirmPassword) {
       setError("Passwords do not match");
@@ -49,9 +48,7 @@ const AdminSignup = () => {
       localStorage.setItem("adminToken", response.data.token);
       navigate("/admin/dashboard");
     } catch (error) {
-      setError(
-        error.response?.data?.message || "An error occurred during signup"
-      );
+      setError(error.message || "An error occurred during signup");
     } finally {
       setIsLoading(false);
     }

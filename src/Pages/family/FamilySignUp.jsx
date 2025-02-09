@@ -43,7 +43,6 @@ const FamilySignUp = () => {
         email,
         password,
         role: "family",
-        total_members: totalMembers,
         address: {
           street,
           city,
@@ -198,7 +197,7 @@ const FamilySignUp = () => {
               </div>
 
               {/* Total Members */}
-              <div>
+              {/* <div>
                 <label className="block text-sm font-medium text-gray-300 mb-2">
                   Total Family Members
                 </label>
@@ -215,7 +214,7 @@ const FamilySignUp = () => {
                     </option>
                   ))}
                 </select>
-              </div>
+              </div> */}
 
               {/* Location Section */}
               <div className="space-y-4">

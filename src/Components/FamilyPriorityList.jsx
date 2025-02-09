@@ -12,7 +12,6 @@ const FamilyListView = () => {
       try {
         const response = await axios.get(`${BASE_URL}/admin/get-all-families`);
         const data = response.data.families || response.data; // Adjust based on API response structure
-        console.log("API Response:", data);
 
         if (Array.isArray(data)) {
           const sorted = sortFamiliesByRisk(data);

@@ -3,6 +3,7 @@ import { Bell, LogOut, User, Grid, MapPin, AlertTriangle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import UserDataForm from "./UserDataForm";
 import FamilyRegistrationForm from "./FamilyRegistrationForm";
+import FamilyNetworkGraph from "../../Components/FamilyNetworkGraph";
 
 const FamilyDashboard = () => {
   const navigate = useNavigate();
@@ -42,7 +43,6 @@ const FamilyDashboard = () => {
         <LogOut
           className="w-6 h-6 text-gray-400 cursor-pointer"
           onClick={() => {
-            console.log("User logout clicked");
             navigate("/");
           }}
         />
@@ -103,7 +103,6 @@ const FamilyDashboard = () => {
           <p className="text-gray-400">Stay updated with alerts</p>
         </div>
       </div>
-
       {/* Available Shelters Section */}
       <div className="bg-slate-800/50 rounded-lg p-6">
         <h2 className="text-gray-200 text-xl mb-4">Available Shelters</h2>

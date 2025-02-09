@@ -15,12 +15,12 @@ function App() {
       <Router>
         <Routes>
           <Route path="/" element={<WelcomePage />} />
+          <Route path="/Admin/signup" element={<AdminSignup />} />
+          <Route path="/Admin/login" element={<AdminLoginPage />} />
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
           <Route path="/family/signup" element={<FamilySignUp />} />
           <Route path="/family/login" element={<FamilyLogin />} />
           <Route path="/family/dashboard" element={<FamilyDashboard />} />
-          <Route path="/Admin/login" element={<AdminLoginPage />} />
-          <Route path="/Admin/signup" element={<AdminSignup />} />
         </Routes>
       </Router>
     </div>

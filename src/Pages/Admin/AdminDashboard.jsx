@@ -33,6 +33,7 @@ const AdminDashboard = () => {
     within10km: { length: 3 },
     within50km: { length: 3 },
   });
+  const [adminEmail, setAdminEmail] = useState("admin@gmail.com");
 
   const [disasterReport, setDisasterReport] = useState({
     location: {
@@ -427,8 +428,9 @@ const AdminDashboard = () => {
       .catch((error) => {
         console.error("Error fetching data:", error);
       });
-  }, []);
 
+    setAdminEmail(localStorage.getItem("adminEmail"));
+  }, []);
   const stats = [
     {
       title: "Report Disaster",
@@ -514,7 +516,7 @@ const AdminDashboard = () => {
             <User className="w-6 h-6 text-gray-400" />
             <div>
               <p className="text-gray-200">Admin</p>
-              <p className="text-sm text-gray-400">admin@gmail.com</p>
+              <p className="text-sm text-gray-400">{adminEmail}</p>
             </div>
           </div>
           <Settings className="w-6 h-6 text-gray-400 cursor-pointer" />
@@ -522,7 +524,6 @@ const AdminDashboard = () => {
           <LogOut
             className="w-6 h-6 text-gray-400 cursor-pointer"
             onClick={() => {
-              console.log("Admin logout clicked");
               navigate("/");
             }}
           />
