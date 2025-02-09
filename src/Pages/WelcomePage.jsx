@@ -18,7 +18,7 @@ const WelcomePage = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl w-full">
         {/* User Login Card */}
         <div
-          onClick={() => navigate("/family/signup")}
+          onClick={() => navigate("/family/login")}
           className="bg-slate-800/50 rounded-lg p-6 cursor-pointer
                     hover:bg-slate-800/70 transition-all duration-300
                     border border-slate-700 hover:border-slate-600"

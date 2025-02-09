@@ -4,7 +4,7 @@ import { User, ChevronLeft, Lock } from "lucide-react";
 import axios from "axios";
 
 // Ashwin ji fix it port 800 tanne alle
-const BASE_URL = import.meta.env.VITE_BASE_URL || "http://localhost:8000";
+const BASE_URL = import.meta.env.VITE_BASE_URL;
 
 const FamilyLogin = () => {
   const navigate = useNavigate();
@@ -35,12 +35,8 @@ const FamilyLogin = () => {
     }
 
     try {
-      // Snd login rrrequesttt
-      const response = await axios.post(`${BASE_URL}/family/login`, formData, {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
+      // Snd login request
+      const response = await axios.post(`${BASE_URL}/family/login`, formData);
 
       if (response.data && response.data.token) {
         // Store token from response
