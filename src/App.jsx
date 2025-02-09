@@ -7,6 +7,7 @@ import FamilySignUp from "./Pages/family/FamilySignUp";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import AdminLoginPage from "./Pages/Admin/AdminLoginPage";
 import AdminSignup from "./Pages/Admin/AdminSignup";
+import FamilyLogin from "./Pages/family/FamilyLogin";
 
 function App() {
   return (
@@ -16,6 +17,7 @@ function App() {
           <Route path="/" element={<WelcomePage />} />
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
           <Route path="/family/signup" element={<FamilySignUp />} />
+          <Route path="/family/login" element={<FamilyLogin />} />
           <Route path="/family/dashboard" element={<FamilyDashboard />} />
           <Route path="/Admin/login" element={<AdminLoginPage />} />
           <Route path="/Admin/signup" element={<AdminSignup />} />
