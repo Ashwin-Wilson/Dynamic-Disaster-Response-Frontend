@@ -1,8 +1,12 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { Shield, ChevronLeft } from "lucide-react";
+import { Shield, ChevronLeft, Lock } from "lucide-react";
+import axios from "axios";
 
-const AdminLoginPage = () => {
+// Update this Ashwin ji wasent this to 8000 port something??
+const BASE_URL = "http://localhost:8000";
+
+const AdminLogin = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     email: "",
@@ -24,24 +28,38 @@ const AdminLoginPage = () => {
     setError("");
 
     try {
-      const response = await fetch("http://localhost:5000/api/admin/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formData),
-      });
+      const response = await axios.post(
+        `${BASE_URL}/api/admin/login`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
-      const data = await response.json();
+      if (response.data && response.data.token) {
+        // Store the token and admin details
+        localStorage.setItem("adminToken", response.data.token);
+        localStorage.setItem("adminEmail", formData.email);
 
-      if (!response.ok) {
-        throw new Error(data.message || "Login failed");
+        // Redirect to admin dashboard
+        navigate("/admin/dashboard");
+      } else {
+        setError("Invalid response from server");
       }
-
-      localStorage.setItem("adminToken", data.token);
-      navigate("/admin/dashboard");
-    } catch (err) {
-      setError(err.message || "An error occurred during login");
+    } catch (error) {
+      if (error.response) {
+        // Server responded with an error
+        setError(error.response.data?.message || "Invalid credentials");
+      } else if (error.request) {
+        // Request was made but no response
+        setError("Cannot connect to server. Please try again later.");
+      } else {
+        // Something else went wrong
+        setError("An error occurred. Please try again.");
+      }
+      console.error("Login error:", error);
     } finally {
       setIsLoading(false);
     }
@@ -51,8 +69,8 @@ const AdminLoginPage = () => {
     <div className="min-h-screen w-full flex flex-col relative bg-[#0f172a] overflow-hidden">
       {/* Background effects */}
       <div className="absolute top-0 left-0 w-full h-full">
-        <div className="absolute top-1/4 -left-1/4 w-1/2 h-1/2 bg-blue-500/20 rounded-full blur-[100px]"></div>
-        <div className="absolute bottom-1/4 -right-1/4 w-1/2 h-1/2 bg-red-500/20 rounded-full blur-[100px]"></div>
+        <div className="absolute top-1/4 -left-1/4 w-1/2 h-1/2 bg-red-500/20 rounded-full blur-[100px]"></div>
+        <div className="absolute bottom-1/4 -right-1/4 w-1/2 h-1/2 bg-red-500/10 rounded-full blur-[100px]"></div>
       </div>
 
       {/* Header */}
@@ -77,25 +95,19 @@ const AdminLoginPage = () => {
                 <Shield className="w-8 h-8 text-red-500" />
               </div>
               <h1 className="text-2xl font-bold text-white">Admin Login</h1>
-              <p className="text-gray-400 mt-2">
-                System administrator access only
-              </p>
+              <p className="text-gray-400 mt-2">Access system administration</p>
             </div>
 
             {/* Login form */}
             <form onSubmit={handleSubmit} className="space-y-6">
               {/* Email field */}
               <div>
-                <label
-                  htmlFor="email"
-                  className="block text-sm font-medium text-gray-300 mb-2"
-                >
+                <label className="block text-sm font-medium text-gray-300 mb-2">
                   Email Address
                 </label>
                 <input
-                  id="email"
-                  name="email"
                   type="email"
+                  name="email"
                   required
                   value={formData.email}
                   onChange={handleChange}
@@ -108,16 +120,12 @@ const AdminLoginPage = () => {
 
               {/* Password field */}
               <div>
-                <label
-                  htmlFor="password"
-                  className="block text-sm font-medium text-gray-300 mb-2"
-                >
+                <label className="block text-sm font-medium text-gray-300 mb-2">
                   Password
                 </label>
                 <input
-                  id="password"
-                  name="password"
                   type="password"
+                  name="password"
                   required
                   value={formData.password}
                   onChange={handleChange}
@@ -129,17 +137,20 @@ const AdminLoginPage = () => {
               </div>
 
               {/* Remember me & Forgot password */}
-              <div className="flex items-center justify-between text-sm">
-                <label className="flex items-center text-gray-300">
+              <div className="flex items-center justify-between">
+                <label className="flex items-center">
                   <input
                     type="checkbox"
-                    className="w-4 h-4 rounded border-gray-600 text-red-500 focus:ring-red-500 bg-white/10"
+                    className="w-4 h-4 rounded border-gray-600 text-red-500 
+                             focus:ring-red-500 focus:ring-offset-gray-900"
                   />
-                  <span className="ml-2">Remember me</span>
+                  <span className="ml-2 text-sm text-gray-300">
+                    Remember me
+                  </span>
                 </label>
                 <button
                   type="button"
-                  className="text-red-400 hover:text-red-300 transition-colors"
+                  className="text-sm text-red-400 hover:text-red-300 transition-colors"
                 >
                   Forgot password?
                 </button>
@@ -161,32 +172,37 @@ const AdminLoginPage = () => {
                          focus:ring-red-500 focus:ring-offset-2 focus:ring-offset-[#0f172a] transition-all
                          disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {isLoading ? "Signing in..." : "Sign in to Dashboard"}
+                {isLoading ? (
+                  "Signing in..."
+                ) : (
+                  <span className="flex items-center justify-center">
+                    <Lock className="w-4 h-4 mr-2" />
+                    Sign in to Dashboard
+                  </span>
+                )}
               </button>
 
               {/* Sign up link */}
-              <p className="text-gray-400 text-center text-sm mt-4">
-                Dont have an account?{" "}
+              <p className="text-gray-400 text-center text-sm">
+                Need an admin account?{" "}
                 <Link
-                  to="/Admin/signup"
+                  to="/admin/signup"
                   className="text-red-400 hover:text-red-300 transition-colors font-medium"
                 >
-                  Sign up here
+                  Request access
                 </Link>
               </p>
             </form>
           </div>
 
-          {/* Additional links */}
-          <div className="mt-8 text-center">
+          {/* Security notice */}
+          <div className="mt-8 text-center space-y-2">
             <p className="text-gray-400 text-sm">
-              Need support?{" "}
-              <a
-                href="/contact"
-                className="text-red-400 hover:text-red-300 transition-colors"
-              >
-                Contact support
-              </a>
+              Secure admin access{" "}
+              <Lock className="w-4 h-4 inline-block text-red-400" />
+            </p>
+            <p className="text-gray-500 text-xs">
+              This is a protected system. Unauthorized access is prohibited.
             </p>
           </div>
         </div>
@@ -195,4 +211,4 @@ const AdminLoginPage = () => {
   );
 };
 
-export default AdminLoginPage;
+export default AdminLogin;
