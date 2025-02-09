@@ -49,6 +49,7 @@ const AdminLogin = () => {
         setError("Invalid response from server");
       }
     } catch (error) {
+      // Pro Error Catcher
       if (error.response) {
         // Server responded with an error
         setError(error.response.data?.message || "Invalid credentials");

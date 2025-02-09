@@ -3,7 +3,8 @@ import { useNavigate, Link } from "react-router-dom";
 import { User, ChevronLeft, Lock } from "lucide-react";
 import axios from "axios";
 
-const BASE_URL = import.meta.env.VITE_BASE_URL;
+// Ashwin ji fix it port 800 tanne alle
+const BASE_URL = import.meta.env.VITE_BASE_URL || "http://localhost:8000";
 
 const FamilyLogin = () => {
   const navigate = useNavigate();
@@ -26,17 +27,64 @@ const FamilyLogin = () => {
     setIsLoading(true);
     setError("");
 
+    // Initial validation
+    if (!formData.email || !formData.password) {
+      setError("Email and password are required!");
+      setIsLoading(false);
+      return;
+    }
+
     try {
-      const response = await axios.post(`${BASE_URL}/family/login`, formData);
+      // Snd login rrrequesttt
+      const response = await axios.post(`${BASE_URL}/family/login`, formData, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
 
-      // Store the token and user details
-      localStorage.setItem("token", response.data.token);
-      localStorage.setItem("familyEmail", formData.email);
+      if (response.data && response.data.token) {
+        // Store token from response
+        localStorage.setItem("token", response.data.token);
+        localStorage.setItem("familyEmail", formData.email);
 
-      // Redirect to dashboard
-      navigate("/family/dashboard");
+        // Show success message
+        console.log("Login successful:", response.data.message);
+
+        // Navigate to dashboard
+        navigate("/family/dashboard");
+      } else {
+        setError("Login failed: Authentication token not received");
+      }
     } catch (error) {
-      setError(error.response?.data?.message || "Invalid credentials");
+      console.error("Login error details:", error);
+
+      if (error.response) {
+        // To Handle the deam errors hehe
+        switch (error.response.status) {
+          case 400:
+            setError("Email and password are required!");
+            break;
+          case 401:
+            setError("Invalid email or password");
+            break;
+          case 404:
+            setError(
+              "Server endpoint not found. Please check your connection."
+            );
+            break;
+          case 500:
+            setError("Server error. Please try again later.");
+            break;
+          default:
+            setError(error.response.data?.message || "Login failed");
+        }
+      } else if (error.request) {
+        setError(
+          "Cannot connect to server. Please check your internet connection."
+        );
+      } else {
+        setError("An error occurred during login. Please try again.");
+      }
     } finally {
       setIsLoading(false);
     }
@@ -161,7 +209,7 @@ const FamilyLogin = () => {
 
               {/* Sign up link */}
               <p className="text-gray-400 text-center text-sm">
-                Don't have an account?{" "}
+                Dont have an account?{" "}
                 <Link
                   to="/family/signup"
                   className="text-blue-400 hover:text-blue-300 transition-colors font-medium"
@@ -174,10 +222,7 @@ const FamilyLogin = () => {
 
           {/* Security notice */}
           <div className="mt-8 text-center">
-            <p className="text-gray-400 text-sm">
-              Protected by end-to-end encryption{" "}
-              <Lock className="w-4 h-4 inline-block text-blue-400" />
-            </p>
+            <p className="text-gray-400 text-sm">Contact us for support! </p>
           </div>
         </div>
       </main>
