@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { OlaMaps } from "../../../OlaMapsWebSDKNew";
 
 //Components
-import FamilyTopologySort from "../../Components/FamilyTopologySort";
 import FamilyNetworkGraph from "../../Components/FamilyNetworkGraph";
 import FamilyListView from "../../Components/FamilyPriorityList";
 import {
@@ -23,11 +23,33 @@ import { Pie } from "react-chartjs-2";
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
+const MAP_API_KEY = import.meta.env.VITE_MAPS_API_KEY;
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
+const createCustomMarker = (color1, color2) => {
+  // Create the main container
+  var customMarker = document.createElement("div");
+  customMarker.className = "relative w-10 h-10 rounded-full animate-pulse";
+
+  // Create outer circle
+  var outerCircle = document.createElement("div");
+  outerCircle.className = `absolute inset-0 rounded-full ${color2} `;
+
+  // Create inner circle
+  var innerCircle = document.createElement("div");
+  innerCircle.className = `absolute inset-2 rounded-full  ${color1} `;
+
+  // Append circles to marker
+  customMarker.appendChild(outerCircle);
+  customMarker.appendChild(innerCircle);
+
+  return customMarker;
+};
+
 const AdminDashboard = () => {
   const navigate = useNavigate();
+  const [view, setView] = useState(0);
   const [familyData, setFamilyData] = useState({
     within5km: { length: 3 },
     within10km: { length: 3 },
@@ -416,6 +438,7 @@ const AdminDashboard = () => {
   });
 
   useEffect(() => {
+    //fetching data
     axios
       .get(`${BASE_URL}/admin/dashboard`, {
         headers: { disasterId: "679b9d62376d9c767da2b160" },
@@ -531,27 +554,57 @@ const AdminDashboard = () => {
       </div>
 
       <div className="flex gap-6">
-        {/* Main Content Area */}
-        <div className="flex-1 bg-slate-800/50 rounded-lg p-6">
-          <h2 className="text-xl text-gray-200 text-center mb-4">
+        <div className="flex-1 bg-slate-800/50 rounded-lg p-6 ">
+          <button
+            className="px-4 py-2 text-xl text-gray-200 bg-slate-800/50 rounded-lg hover:bg-slate-800/70 transition-all duration-300 border border-slate-700 hover:border-slate-600 mr-4 mb-4"
+            onClick={() => {
+              setView(0);
+            }}
+          >
             Graphical view
-          </h2>
-          <div className="aspect-video bg-slate-900 rounded-lg ">
-            {/* Placeholder for graphs/charts */}
-            <div className="grid grid-cols-2  gap-4">
-              {/* Left Side - Pie Chart */}
-              <div className="bg-slate-900 rounded-lg flex items-center justify-center p-4 mt-7">
+          </button>
+
+          <button
+            className="px-4 py-2 text-xl text-gray-200 bg-slate-800/50 rounded-lg hover:bg-slate-800/70 transition-all duration-300 border border-slate-700 hover:border-slate-600 mr-4 mb-4"
+            onClick={() => {
+              setView(1);
+            }}
+          >
+            Map view
+          </button>
+
+          <button
+            className="px-4 py-2 text-xl text-gray-200 bg-slate-800/50 rounded-lg hover:bg-slate-800/70 transition-all duration-300 border border-slate-700 hover:border-slate-600 mr-4 mb-4"
+            onClick={() => {
+              setView(2);
+            }}
+          >
+            Family List view
+          </button>
+          {/* <h2 className="text-xl text-gray-200 text-center mb-4">
+           
+          </h2> */}
+
+          {view === 0 && (
+            <div className="grid grid-cols-2 gap-4 bg-slate-900">
+              <div className="p-4 mt-7">
                 <Pie data={pieData} />
               </div>
-              {/* Right Side - Placeholder */}
-              <div className="bg-slate-900 rounded-lg flex items-center justify-center p-4">
-                {/* <FamilyTopologySort disasterData={report} /> */}
+              <div className="p-4">
                 <FamilyNetworkGraph disasterData={report} />
               </div>
             </div>
-          </div>
+          )}
+
+          {view === 1 && <MapView />}
+
+          {view === 2 && (
+            <div className="h-[600px] overflow-y-auto rounded-lg">
+              <FamilyListView />
+            </div>
+          )}
         </div>
-        {/* Stats Sidebar */}
+
         <div className="w-64 space-y-4">
           {stats.map((stat, index) => (
             <div
@@ -575,7 +628,56 @@ const AdminDashboard = () => {
           ))}
         </div>
       </div>
-      <FamilyListView />
+    </div>
+  );
+};
+
+//local components
+const MapView = () => {
+  //map dependencies
+  useEffect(() => {
+    const olaMaps = new OlaMaps({
+      apiKey: MAP_API_KEY,
+    });
+
+    const myMap = olaMaps.init({
+      style:
+        "https://api.olamaps.io/tiles/vector/v1/styles/default-light-standard/style.json",
+      container: "map",
+      center: [77.61648476788898, 12.931423492103944],
+      zoom: 15,
+      branding: false,
+    });
+
+    const redMarker = createCustomMarker("bg-red-600", "bg-red-400/50");
+
+    const rMarker = olaMaps
+      .addMarker({
+        element: redMarker,
+        offset: [0, 6],
+        anchor: "bottom",
+        // draggable: true,
+      })
+      .setLngLat([77.61248476788898, 12.934223492103444])
+      .addTo(myMap);
+
+    function onDrag() {
+      const lngLat = rMarker.getLngLat();
+      setrMarkerLoc(lngLat);
+      // console.log(lngLat);
+    }
+    rMarker.on("drag", onDrag);
+  });
+  return (
+    <div>
+      <div id="map" style={{ height: "40rem", width: "70rem" }}></div>
+      <button
+        onClick={() => {
+          console.log(rMarkerLoc);
+        }}
+      >
+        Select location
+      </button>
     </div>
   );
 };
