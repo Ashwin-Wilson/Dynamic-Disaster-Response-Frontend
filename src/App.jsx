@@ -9,6 +9,7 @@ import AdminLoginPage from "./Pages/Admin/AdminLoginPage";
 import AdminSignup from "./Pages/Admin/AdminSignup";
 import FamilyLogin from "./Pages/family/FamilyLogin";
 import MapView from "./Components/MapView";
+import DriverPage from "./Pages/driver/DriverPage";
 
 function App() {
   return (
@@ -24,6 +25,7 @@ function App() {
           <Route path="/family/signup" element={<FamilySignUp />} />
           <Route path="/family/login" element={<FamilyLogin />} />
           <Route path="/family/dashboard" element={<FamilyDashboard />} />
+          <Route path="/driver/dashboard" element={<DriverPage />} />
         </Routes>
       </Router>
     </div>

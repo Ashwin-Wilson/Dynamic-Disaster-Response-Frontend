@@ -57,7 +57,10 @@ const WelcomePage = () => {
 
         {/* Volunteer Card */}
         <div
-          onClick={() => navigate("/volunteer-dashboard")}
+          onClick={() => {
+            console.log("Driver login clicked");
+            navigate("/driver/dashboard");
+          }}
           className="bg-slate-800/50 rounded-lg p-6 cursor-pointer
                     hover:bg-slate-800/70 transition-all duration-300
                     border border-slate-700 hover:border-slate-600"
@@ -75,7 +78,7 @@ const WelcomePage = () => {
 
         {/* Driver Card */}
         <div
-          onClick={() => navigate("/driver-dashboard")}
+          onClick={() => navigate("/driver/dashboard")}
           className="bg-slate-800/50 rounded-lg p-6 cursor-pointer
                     hover:bg-slate-800/70 transition-all duration-300
                     border border-slate-700 hover:border-slate-600"
