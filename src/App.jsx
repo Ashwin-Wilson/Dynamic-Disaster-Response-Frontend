@@ -1,14 +1,13 @@
 import "./App.css";
+import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+
 import WelcomePage from "./Pages/WelcomePage";
 import AdminDashboard from "./Pages/Admin/AdminDashboard";
 import FamilyDashboard from "./Pages/family/FamilyDashboard";
-
 import FamilySignUp from "./Pages/family/FamilySignUp";
-import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import AdminLoginPage from "./Pages/Admin/AdminLoginPage";
 import AdminSignup from "./Pages/Admin/AdminSignup";
 import FamilyLogin from "./Pages/family/FamilyLogin";
-import MapView from "./Components/MapView";
 import DriverPage from "./Pages/driver/DriverPage";
 
 function App() {
@@ -17,8 +16,6 @@ function App() {
       <Router>
         <Routes>
           <Route path="/" element={<WelcomePage />} />
-          {/* <Route path="/" element={<MapView />} /> */}
-
           <Route path="/Admin/signup" element={<AdminSignup />} />
           <Route path="/Admin/login" element={<AdminLoginPage />} />
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
