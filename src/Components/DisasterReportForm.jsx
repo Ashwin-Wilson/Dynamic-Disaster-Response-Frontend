@@ -24,7 +24,7 @@ const createCustomMarker = (color1, color2) => {
 
 const MAP_API_KEY = import.meta.env.VITE_MAPS_API_KEY;
 
-const MapView = () => {
+const DisasterReportForm = () => {
   const [rMarkerLoc, setrMarkerLoc] = useState("");
   useEffect(() => {
     const olaMaps = new OlaMaps({
@@ -35,7 +35,7 @@ const MapView = () => {
       style:
         "https://api.olamaps.io/tiles/vector/v1/styles/default-light-standard/style.json",
       container: "map",
-      center: [77.61648476788898, 12.931423492103944],
+      center: [76.94006268199648, 9.851076591262078],
       zoom: 15,
       branding: false,
     });
@@ -49,7 +49,7 @@ const MapView = () => {
         anchor: "bottom",
         draggable: true,
       })
-      .setLngLat([77.61248476788898, 12.934223492103444])
+      .setLngLat([76.94006268199648, 9.851076591262078])
       .addTo(myMap);
 
     function onDrag() {
@@ -62,17 +62,19 @@ const MapView = () => {
 
   // custom marker
   return (
-    <div>
-      <div id="map" style={{ height: "40rem", width: "50rem" }}></div> <br />
-      <button
-        onClick={() => {
-          console.log(rMarkerLoc);
-        }}
-      >
-        Select location
-      </button>
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 ">
+      <div className="bg-slate-900 rounded-lg w-full  mx-4 max-h-[90vh] overflow-y-auto ">
+        <div id="map" style={{ height: "40rem", width: "50rem" }}></div> <br />
+        <button
+          onClick={() => {
+            console.log(rMarkerLoc);
+          }}
+        >
+          Select location
+        </button>
+      </div>
     </div>
   );
 };
 
-export default MapView;
+export default DisasterReportForm;

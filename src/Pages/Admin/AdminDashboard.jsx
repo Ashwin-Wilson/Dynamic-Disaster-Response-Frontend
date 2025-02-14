@@ -21,6 +21,7 @@ import {
 
 import { Pie } from "react-chartjs-2";
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
+import DisasterReportForm from "../../Components/DisasterReportForm";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 const MAP_API_KEY = import.meta.env.VITE_MAPS_API_KEY;
@@ -56,6 +57,7 @@ const AdminDashboard = () => {
     within50km: { length: 3 },
   });
   const [adminEmail, setAdminEmail] = useState("admin@gmail.com");
+  const [viewDisasterReportForm, setViewDisasterReportForm] = useState(false);
 
   const [disasterReport, setDisasterReport] = useState({
     location: {
@@ -456,14 +458,6 @@ const AdminDashboard = () => {
   }, []);
   const stats = [
     {
-      title: "Report Disaster",
-      value: "",
-      description: "Report incidents to users",
-      icon: AlertTriangle,
-      iconBg: "bg-red-500/20",
-      iconColor: "text-red-500",
-    },
-    {
       title: "Active Alerts",
       value: "3",
       icon: AlertTriangle,
@@ -606,6 +600,21 @@ const AdminDashboard = () => {
         </div>
 
         <div className="w-64 space-y-4">
+          <div
+            className="bg-slate-800/50 rounded-lg p-4 flex items-center space-x-4"
+            onClick={() => {
+              setViewDisasterReportForm(!viewDisasterReportForm);
+            }}
+          >
+            <div className={`p-3 rounded-full bg-red-500/20`}>
+              <AlertTriangle className={`w-6 h-6 text-red-500`} />
+            </div>
+            <div>
+              <h3 className="text-gray-200">Report Disaster</h3>
+              <p className="text-sm text-gray-400">Report incidents to users</p>
+            </div>
+          </div>
+
           {stats.map((stat, index) => (
             <div
               key={index}
@@ -628,6 +637,8 @@ const AdminDashboard = () => {
           ))}
         </div>
       </div>
+
+      {viewDisasterReportForm === true && <DisasterReportForm />}
     </div>
   );
 };
@@ -635,6 +646,7 @@ const AdminDashboard = () => {
 //local components
 const MapView = () => {
   //map dependencies
+  const [rMarkerLoc, setrMarkerLoc] = useState("");
   useEffect(() => {
     const olaMaps = new OlaMaps({
       apiKey: MAP_API_KEY,
@@ -644,7 +656,7 @@ const MapView = () => {
       style:
         "https://api.olamaps.io/tiles/vector/v1/styles/default-light-standard/style.json",
       container: "map",
-      center: [77.61648476788898, 12.931423492103944],
+      center: [76.94006268199648, 9.851076591262078],
       zoom: 15,
       branding: false,
     });
@@ -658,28 +670,10 @@ const MapView = () => {
         anchor: "bottom",
         // draggable: true,
       })
-      .setLngLat([77.61248476788898, 12.934223492103444])
+      .setLngLat([76.94006268199648, 9.851076591262078])
       .addTo(myMap);
-
-    function onDrag() {
-      const lngLat = rMarker.getLngLat();
-      setrMarkerLoc(lngLat);
-      // console.log(lngLat);
-    }
-    rMarker.on("drag", onDrag);
   });
-  return (
-    <div>
-      <div id="map" style={{ height: "40rem", width: "70rem" }}></div>
-      <button
-        onClick={() => {
-          console.log(rMarkerLoc);
-        }}
-      >
-        Select location
-      </button>
-    </div>
-  );
+  return <div id="map" style={{ height: "40rem", width: "70rem" }}></div>;
 };
 
 export default AdminDashboard;

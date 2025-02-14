@@ -8,7 +8,7 @@ import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import AdminLoginPage from "./Pages/Admin/AdminLoginPage";
 import AdminSignup from "./Pages/Admin/AdminSignup";
 import FamilyLogin from "./Pages/family/FamilyLogin";
-import MapView from "./Components/MapView";
+import MapView from "./Components/DisasterReportForm";
 
 function App() {
   return (
@@ -16,8 +16,6 @@ function App() {
       <Router>
         <Routes>
           <Route path="/" element={<WelcomePage />} />
-          {/* <Route path="/" element={<MapView />} /> */}
-
           <Route path="/Admin/signup" element={<AdminSignup />} />
           <Route path="/Admin/login" element={<AdminLoginPage />} />
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
