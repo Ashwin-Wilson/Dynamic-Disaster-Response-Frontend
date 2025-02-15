@@ -638,7 +638,12 @@ const AdminDashboard = () => {
         </div>
       </div>
 
-      {viewDisasterReportForm === true && <DisasterReportForm />}
+      {viewDisasterReportForm === true && (
+        <DisasterReportForm
+          onClose={() => setViewDisasterReportForm(false)}
+          role="admin"
+        />
+      )}
     </div>
   );
 };

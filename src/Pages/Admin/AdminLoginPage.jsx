@@ -33,10 +33,11 @@ const AdminLogin = () => {
         password: formData.password,
       });
 
-      if (response.data && response.data.token) {
+      if ((response.data && response.data.token, response.data.adminId)) {
         // Store the token and admin details
         localStorage.setItem("adminToken", response.data.token);
         localStorage.setItem("adminEmail", formData.email);
+        localStorage.setItem("adminID", response.data.adminId);
 
         // Redirect to admin dashboard
         navigate("/admin/dashboard");
