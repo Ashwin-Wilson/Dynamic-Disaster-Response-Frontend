@@ -1,7 +1,6 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import {
   MapPin,
-  AlertTriangle,
   Car,
   Users,
   Bell,
@@ -9,8 +8,10 @@ import {
   LogOut,
   Navigation2,
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const DriverPage = () => {
+  const navigate = useNavigate();
   const [isOnline, setIsOnline] = useState(false);
   const [activeRequests, setActiveRequests] = useState([
     {
@@ -63,7 +64,12 @@ const DriverPage = () => {
           <div className="flex items-center gap-4">
             <Bell className="w-6 h-6 text-gray-400 hover:text-yellow-500 cursor-pointer" />
             <Settings className="w-6 h-6 text-gray-400 hover:text-yellow-500 cursor-pointer" />
-            <LogOut className="w-6 h-6 text-gray-400 hover:text-yellow-500 cursor-pointer" />
+            <LogOut
+              className="w-6 h-6 text-gray-400 hover:text-yellow-500 cursor-pointer"
+              onClick={() => {
+                navigate("/");
+              }}
+            />
           </div>
         </div>
       </header>
