@@ -58,8 +58,8 @@ const WelcomePage = () => {
         {/* Volunteer Card */}
         <div
           onClick={() => {
-            console.log("Driver login clicked");
-            navigate("/driver/dashboard");
+            console.log("Volunteer login clicked");
+            navigate("/volunteer/dashboard");
           }}
           className="bg-slate-800/50 rounded-lg p-6 cursor-pointer
                     hover:bg-slate-800/70 transition-all duration-300

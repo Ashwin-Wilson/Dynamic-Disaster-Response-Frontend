@@ -9,6 +9,7 @@ import AdminLoginPage from "./Pages/Admin/AdminLoginPage";
 import AdminSignup from "./Pages/Admin/AdminSignup";
 import FamilyLogin from "./Pages/family/FamilyLogin";
 import DriverPage from "./Pages/driver/DriverPage";
+import VolunteerPage from "./volunteer/VolunteerPage";
 
 function App() {
   return (
@@ -23,6 +24,7 @@ function App() {
           <Route path="/family/login" element={<FamilyLogin />} />
           <Route path="/family/dashboard" element={<FamilyDashboard />} />
           <Route path="/driver/dashboard" element={<DriverPage />} />
+          <Route path="/volunteer/dashboard" element={<VolunteerPage />} />
         </Routes>
       </Router>
     </div>
