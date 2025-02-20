@@ -59,21 +59,7 @@ const AdminDashboard = () => {
   const [adminEmail, setAdminEmail] = useState("admin@gmail.com");
   const [viewDisasterReportForm, setViewDisasterReportForm] = useState(false);
 
-  const [disasterReport, setDisasterReport] = useState({
-    location: {
-      type: "Point",
-      coordinates: [77.209, 28.6139],
-    },
-    _id: "679b9d62376d9c767da2b160",
-    disaster_title: "Earthquake in City A",
-    description:
-      "A major earthquake with a magnitude of 7.8 hit City A, causing widespread damage to buildings, infrastructure, and loss of life. Many people are trapped under debris, and emergency services are being mobilized.",
-    admin_id: "679b344432012bfb4fe31a31",
-    intensity: "severe",
-    createdAt: "2025-01-30T15:40:18.607Z",
-    updatedAt: "2025-01-30T15:40:18.607Z",
-    __v: 0,
-  });
+  const [disasterReport, setDisasterReport] = useState(null);
   const [report, setReport] = useState({
     disaster_report: {
       location: {
@@ -440,22 +426,42 @@ const AdminDashboard = () => {
   });
 
   useEffect(() => {
-    //fetching data
-    axios
-      .get(`${BASE_URL}/admin/dashboard`, {
-        headers: { disasterId: "679b9d62376d9c767da2b160" },
-      })
-      .then((response) => {
-        setFamilyData(response.data.families);
-        setDisasterReport(response.data.disaster_report);
-        setReport(response.data);
-      })
-      .catch((error) => {
-        console.error("Error fetching data:", error);
-      });
+    const getAllDisasterReports = async () => {
+      await axios
+        .get(`${BASE_URL}/admin/get-all-disaster-reports`)
+        .then((response) => {
+          setDisasterReport(response.data.disasterReports);
+        })
+        .catch((error) => {
+          console.error("Error fetching data:", error);
+        });
+    };
 
+    getAllDisasterReports();
+    //fetching data
     setAdminEmail(localStorage.getItem("adminEmail"));
   }, []);
+
+  useEffect(() => {
+    const getDashboardData = () => {
+      axios
+        .get(`${BASE_URL}/admin/dashboard`, {
+          headers: { disasterId: disasterReport[0]._id },
+        })
+        .then((response) => {
+          setFamilyData(response.data.families);
+          // setDisasterReport(response.data.disaster_report);
+          setReport(response.data);
+        })
+        .catch((error) => {
+          console.error("Error fetching data:", error);
+        });
+    };
+    if (disasterReport) {
+      getDashboardData();
+    }
+  }, [disasterReport]);
+
   const stats = [
     {
       title: "Active Alerts",
@@ -508,9 +514,9 @@ const AdminDashboard = () => {
       {
         label: "Statistics",
         data: [
-          familyData.within5km.length,
-          familyData.within10km.length,
-          familyData.within50km.length,
+          familyData.within5km.length ?? 3,
+          familyData.within10km.length ?? 3,
+          familyData.within50km.length ?? 3,
         ],
         backgroundColor: ["#ef4444", "#facc15", "#4caf50"],
         borderWidth: 0,
@@ -590,7 +596,7 @@ const AdminDashboard = () => {
             </div>
           )}
 
-          {view === 1 && <MapView />}
+          {view === 1 && <MapView disasterReport={disasterReport} />}
 
           {view === 2 && (
             <div className="h-[600px] overflow-y-auto rounded-lg">
@@ -649,9 +655,30 @@ const AdminDashboard = () => {
 };
 
 //local components
-const MapView = () => {
+const MapView = ({ disasterReport }) => {
   //map dependencies
-  const [rMarkerLoc, setrMarkerLoc] = useState("");
+  const [rMarkerLoc, setrMarkerLoc] = useState([
+    {
+      lng: 76.94006268199648,
+      lat: 9.851076591262078,
+    },
+    {
+      lng: 76.98006268199648,
+      lat: 9.851076591262078,
+    },
+  ]);
+
+  useEffect(() => {
+    setrMarkerLoc(
+      disasterReport.map((item) => {
+        return {
+          lng: item.location.coordinates[0],
+          lat: item.location.coordinates[1],
+        };
+      })
+    );
+  }, []);
+
   useEffect(() => {
     const olaMaps = new OlaMaps({
       apiKey: MAP_API_KEY,
@@ -661,23 +688,74 @@ const MapView = () => {
       style:
         "https://api.olamaps.io/tiles/vector/v1/styles/default-light-standard/style.json",
       container: "map",
-      center: [76.94006268199648, 9.851076591262078],
+      center: [rMarkerLoc[0].lng, rMarkerLoc[0].lat],
       zoom: 15,
       branding: false,
     });
 
     const redMarker = createCustomMarker("bg-red-600", "bg-red-400/50");
 
-    const rMarker = olaMaps
-      .addMarker({
-        element: redMarker,
-        offset: [0, 6],
-        anchor: "bottom",
-        // draggable: true,
-      })
-      .setLngLat([76.94006268199648, 9.851076591262078])
-      .addTo(myMap);
-  });
+    //To add the red marker with pulse animation can't add multiple markers!
+    // const rMarker = olaMaps
+    //   .addMarker({
+    //     element: redMarker,
+    //     offset: [0, 6],
+    //     anchor: "bottom",
+    //     // draggable: true,
+    //   })
+    //   .setLngLat([rMarkerLoc[0].lng, rMarkerLoc[0].lat])
+    //   .addTo(myMap);
+
+    //To add multiple markers, marker clustering
+    myMap.on("load", () => {
+      myMap.addSource("earthquakes", {
+        type: "geojson",
+
+        data: {
+          type: "FeatureCollection",
+          features: rMarkerLoc.map((item) => {
+            return {
+              geometry: {
+                type: "Point",
+                coordinates: [item.lng, item.lat],
+              },
+            };
+          }),
+        },
+        cluster: true,
+        clusterMaxZoom: 14,
+        clusterRadius: 50,
+      });
+
+      //Color in wider view
+      myMap.addLayer({
+        id: "clusters",
+        type: "circle",
+        source: "earthquakes",
+        filter: ["has", "point_count"],
+
+        paint: {
+          "circle-color": ["step", ["get", "point_count"], "red", 3, "red"],
+          "circle-radius": ["step", ["get", "point_count"], 20, 2, 30, 4, 40],
+        },
+      });
+
+      //Color in closer view
+      myMap.addLayer({
+        id: "unclustered-point",
+        type: "circle",
+        source: "earthquakes",
+        filter: ["!", ["has", "point_count"]],
+
+        paint: {
+          "circle-color": "red",
+          "circle-radius": 20,
+          "circle-stroke-width": 1,
+          "circle-stroke-color": "red",
+        },
+      });
+    });
+  }, [rMarkerLoc]);
   return <div id="map" style={{ height: "40rem", width: "70rem" }}></div>;
 };
 
