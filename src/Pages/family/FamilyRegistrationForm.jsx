@@ -1,10 +1,15 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { X, Trash2 } from "lucide-react";
 import axios from "axios";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
+const MAP_API_KEY = import.meta.env.VITE_MAPS_API_KEY;
 
 const FamilyRegistrationForm = ({ isOpen, onClose }) => {
+  const [location, setLocation] = useState({
+    lng: 76.94006268199648,
+    lat: 9.851076591262078,
+  });
   const [formData, setFormData] = useState({
     family_members: [
       {
@@ -118,7 +123,13 @@ const FamilyRegistrationForm = ({ isOpen, onClose }) => {
             elderly: false,
             child: false,
           },
-          chronic_illness: [],
+          chronic_illness: [
+            {
+              condition: "",
+              medication_required: false,
+              details: "",
+            },
+          ],
         },
       ],
       total_members: formData.total_members + 1,
@@ -137,6 +148,7 @@ const FamilyRegistrationForm = ({ isOpen, onClose }) => {
   };
 
   const handleSubmit = (e) => {
+    formData.address.location.coordinates = [location.lng, location.lat];
     axios.post(`${BASE_URL}/family/update`, {
       token: localStorage.getItem("token"),
       updates: formData,
@@ -272,6 +284,8 @@ const FamilyRegistrationForm = ({ isOpen, onClose }) => {
                             onChange={(e) => {
                               const newMembers = [...formData.family_members];
                               newMembers[index].vulnerability_type[type] =
+                                e.target.checked;
+                              newMembers[index].is_vulnerable =
                                 e.target.checked;
                               setFormData({
                                 ...formData,
@@ -439,6 +453,7 @@ const FamilyRegistrationForm = ({ isOpen, onClose }) => {
                 <h4 className="text-lg text-white mb-2">
                   Location Coordinates
                 </h4>
+                <MapView setLoction={setLocation} />
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-gray-200 mb-2">
@@ -448,23 +463,9 @@ const FamilyRegistrationForm = ({ isOpen, onClose }) => {
                       type="number"
                       step="0.000001"
                       className="w-full bg-slate-800/50 border border-slate-700 rounded-md p-2 text-white"
-                      value={formData.address.location.coordinates[0]}
-                      onChange={(e) => {
-                        const newCoords = [
-                          ...formData.address.location.coordinates,
-                        ];
-                        newCoords[0] = parseFloat(e.target.value);
-                        setFormData({
-                          ...formData,
-                          address: {
-                            ...formData.address,
-                            location: {
-                              ...formData.address.location,
-                              coordinates: newCoords,
-                            },
-                          },
-                        });
-                      }}
+                      // value={formData.address.location.coordinates[0]}
+                      value={location.lng}
+                      readOnly
                     />
                   </div>
                   <div>
@@ -473,23 +474,9 @@ const FamilyRegistrationForm = ({ isOpen, onClose }) => {
                       type="number"
                       step="0.000001"
                       className="w-full bg-slate-800/50 border border-slate-700 rounded-md p-2 text-white"
-                      value={formData.address.location.coordinates[1]}
-                      onChange={(e) => {
-                        const newCoords = [
-                          ...formData.address.location.coordinates,
-                        ];
-                        newCoords[1] = parseFloat(e.target.value);
-                        setFormData({
-                          ...formData,
-                          address: {
-                            ...formData.address,
-                            location: {
-                              ...formData.address.location,
-                              coordinates: newCoords,
-                            },
-                          },
-                        });
-                      }}
+                      // value={formData.address.location.coordinates[1]}
+                      value={location.lat}
+                      readOnly
                     />
                   </div>
                 </div>
@@ -942,6 +929,210 @@ const FamilyRegistrationForm = ({ isOpen, onClose }) => {
           </form>
         </div>
       </div>
+    </div>
+  );
+};
+
+const createCustomMarker = (color1, color2) => {
+  // Create the main container
+  var customMarker = document.createElement("div");
+  customMarker.className = "relative w-10 h-10 rounded-full animate-pulse";
+
+  // Create outer circle
+  var outerCircle = document.createElement("div");
+  outerCircle.className = `absolute inset-0 rounded-full ${color2} `;
+
+  // Create inner circle
+  var innerCircle = document.createElement("div");
+  innerCircle.className = `absolute inset-2 rounded-full  ${color1} `;
+
+  // Append circles to marker
+  customMarker.appendChild(outerCircle);
+  customMarker.appendChild(innerCircle);
+
+  return customMarker;
+};
+
+const MapView = ({ setLoction }) => {
+  const [mapMarker, setMapMarker] = useState(null);
+  const [olaMap, setOlaMap] = useState(null);
+  const [rMarkerLoc, setrMarkerLoc] = useState({
+    lng: 76.94006268199648,
+    lat: 9.851076591262078,
+  });
+
+  useEffect(() => {
+    const olaMaps = new OlaMaps({
+      apiKey: MAP_API_KEY,
+    });
+
+    const myMap = olaMaps.init({
+      style:
+        "https://api.olamaps.io/tiles/vector/v1/styles/default-light-standard/style.json",
+      container: "map",
+      center: [rMarkerLoc.lng, rMarkerLoc.lat],
+      zoom: 15,
+      branding: false,
+    });
+    setOlaMap(myMap);
+    const redMarker = createCustomMarker("bg-red-600", "bg-red-400/50");
+
+    const rMarker = olaMaps
+      .addMarker({
+        element: redMarker,
+        offset: [0, 6],
+        anchor: "bottom",
+        draggable: true,
+      })
+      .setLngLat([rMarkerLoc.lng, rMarkerLoc.lat])
+      .addTo(myMap);
+
+    setMapMarker(rMarker);
+
+    function onDrag() {
+      const lngLat = rMarker.getLngLat();
+      setrMarkerLoc(lngLat);
+    }
+    rMarker.on("drag", onDrag);
+
+    const geolocate = olaMaps.addGeolocateControls({
+      positionOptions: {
+        enableHighAccuracy: true,
+      },
+      trackUserLocation: true,
+    });
+
+    myMap.addControl(geolocate);
+
+    geolocate.on("geolocate", async (event) => {
+      await rMarker.setLngLat([event.coords.longitude, event.coords.latitude]);
+      setrMarkerLoc({
+        lng: event.coords.longitude,
+        lat: event.coords.latitude,
+      });
+    });
+  }, []);
+  useEffect(() => {
+    setLoction(rMarkerLoc);
+  }, [rMarkerLoc]);
+  return (
+    <div className="flex-1">
+      <SearchBar
+        mapMarker={mapMarker}
+        olaMap={olaMap}
+        setrMarkerLoc={setrMarkerLoc}
+      />
+      <p> Drag the marker to select other locations</p>
+      <div id="map" style={{ height: "40rem", width: "100%" }}></div>
+    </div>
+  );
+};
+
+const SearchBar = ({ mapMarker, olaMap, setrMarkerLoc }) => {
+  const [searchTerm, setSearchTerm] = useState("");
+  const [suggestions, setSuggestions] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
+  const searchRef = useRef(null);
+
+  const fetchSuggestions = async (input) => {
+    if (!input.trim()) {
+      setSuggestions([]);
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const response = await axios.get(
+        `https://api.olamaps.io/places/v1/autocomplete?input=${encodeURIComponent(
+          input
+        )}&api_key=${MAP_API_KEY}`
+      );
+      setSuggestions(response.data.predictions || []);
+      setIsOpen(true);
+    } catch (error) {
+      console.error("Error fetching suggestions:", error);
+      setSuggestions([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (searchRef.current && !searchRef.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const handleInputChange = (e) => {
+    const value = e.target.value;
+    setSearchTerm(value);
+
+    // Debounce API calls
+    const timeoutId = setTimeout(() => {
+      fetchSuggestions(value);
+    }, 300);
+
+    return () => clearTimeout(timeoutId);
+  };
+
+  const handleSuggestionClick = async (suggestion) => {
+    setSearchTerm(suggestion.description);
+    setIsOpen(false);
+
+    // You can handle the selected location here
+    const lng = suggestion.geometry.location.lng;
+    const lat = suggestion.geometry.location.lat;
+
+    // Update marker position
+    if (mapMarker) {
+      await mapMarker.setLngLat([lng, lat]);
+      await olaMap.setCenter([lng, lat]);
+      await setrMarkerLoc({ lng, lat });
+    }
+  };
+
+  return (
+    <div className="relative w-full" ref={searchRef}>
+      <input
+        type="text"
+        value={searchTerm}
+        onChange={handleInputChange}
+        placeholder="Search for a location..."
+        className="w-full px-4 py-2 text-white bg-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+      />
+
+      {/* Loading spinner */}
+      {loading && (
+        <div className="absolute right-3 top-3">
+          <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+        </div>
+      )}
+
+      {/* Suggestions dropdown */}
+      {isOpen && suggestions.length > 0 && (
+        <div className="absolute top-12 w-full bg-slate-800 rounded-lg shadow-lg z-50 max-h-60 overflow-y-auto">
+          {suggestions.map((suggestion) => (
+            <button
+              key={suggestion.place_id}
+              onClick={() => handleSuggestionClick(suggestion)}
+              className="w-full px-4 py-2 text-left text-white hover:bg-slate-700 focus:outline-none focus:bg-slate-700"
+            >
+              <p className="font-medium">
+                {suggestion.structured_formatting?.main_text}
+              </p>
+              <p className="text-sm text-gray-400">
+                {suggestion.structured_formatting?.secondary_text}
+              </p>
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 };
