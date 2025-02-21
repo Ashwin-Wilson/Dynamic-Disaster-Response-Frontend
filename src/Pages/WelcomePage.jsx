@@ -1,4 +1,4 @@
-import { User, Shield, Phone, Truck } from "lucide-react";
+import { User, Shield, Phone, Truck, Building2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 const WelcomePage = () => {
@@ -90,6 +90,24 @@ const WelcomePage = () => {
             <div>
               <h2 className="text-xl text-white mb-2">Driver</h2>
               <p className="text-gray-400">Driver login</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Caretaker Card */}
+        <div
+          onClick={() => navigate("/caretaker/dashboard")}
+          className="bg-slate-800/50 rounded-lg p-6 cursor-pointer
+                    hover:bg-slate-800/70 transition-all duration-300
+                    border border-slate-700 hover:border-slate-600"
+        >
+          <div className="flex flex-col items-start">
+            <div className="p-3 rounded-full bg-purple-500 mb-4">
+              <Building2 className="w-6 h-6 text-white" />
+            </div>
+            <div>
+              <h2 className="text-xl text-white mb-2">Caretaker</h2>
+              <p className="text-gray-400">Manage shelter</p>
             </div>
           </div>
         </div>
