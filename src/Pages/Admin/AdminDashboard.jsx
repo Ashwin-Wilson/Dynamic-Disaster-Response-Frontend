@@ -154,7 +154,7 @@ const AdminDashboard = () => {
           familyData.within10km.length ?? 3,
           familyData.within50km.length ?? 3,
         ],
-        backgroundColor: ["#ef4444", "#facc15", "#4caf50"],
+        backgroundColor: ["#f97316", "#facc15", "#4caf50"],
         borderWidth: 0,
         spacing: 2,
       },
@@ -219,12 +219,17 @@ const AdminDashboard = () => {
           </button>
 
           {view === 0 && (
-            <div className="grid grid-cols-2 gap-4 bg-slate-900">
+            <div className="grid grid-cols-2 gap-2 bg-slate-900 ">
               <div className="p-4 mt-7">
                 <Pie data={pieData} />
               </div>
-              <div className="p-4">
-                <FamilyNetworkGraph disasterData={report} />
+              <div className="p-4 ">
+                {report && (
+                  <FamilyNetworkGraph
+                    disasterReport={report.disaster_report}
+                    families={report.families}
+                  />
+                )}
               </div>
             </div>
           )}
@@ -491,7 +496,6 @@ const MapView = ({ disasterReport }) => {
         },
       });
     });
-    console.log(familyLoc);
   }, [rMarkerLoc, familyLoc]);
   return <div id="map" style={{ height: "40rem", width: "70rem" }}></div>;
 };
