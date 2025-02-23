@@ -1,4 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+
+import { OlaMaps } from "../../../OlaMapsWebSDKNew";
+import polyline from "@mapbox/polyline";
+
+import axios from "axios";
+
 import {
   MapPin,
   Car,
@@ -8,9 +15,11 @@ import {
   LogOut,
   Navigation2,
 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
 
-const DriverPage = () => {
+const BASE_URL = import.meta.env.VITE_BASE_URL;
+const MAP_API_KEY = import.meta.env.VITE_MAPS_API_KEY;
+
+const DriverDashboard = () => {
   const navigate = useNavigate();
   const [isOnline, setIsOnline] = useState(false);
   const [activeRequests, setActiveRequests] = useState([
@@ -52,6 +61,20 @@ const DriverPage = () => {
     );
   };
 
+  useEffect(() => {
+    axios
+      .post(`${BASE_URL}/driver/update`, {
+        token: localStorage.getItem("driverToken"),
+        updates: { available: isOnline },
+      })
+      .then((response) => {
+        console.log("Driver availablity updated ", response);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  }, [isOnline]);
+
   return (
     <div className="min-h-screen bg-[#1a1f2e] text-gray-100">
       {/* Header */}
@@ -83,9 +106,13 @@ const DriverPage = () => {
                 <Car className="w-8 h-8 text-[#1a1f2e]" />
               </div>
               <div>
-                <h2 className="text-xl font-bold">Thomas</h2>
+                <h2 className="text-xl font-bold">
+                  {localStorage.getItem("driverName") ?? "Thomas"}
+                </h2>
                 <p className="text-gray-400">Vehicle: Toyota Hiace</p>
-                <p className="text-gray-400">No: KL-26-24001</p>
+                <p className="text-gray-400">
+                  No:{localStorage.getItem("driverVehicleNum") ?? "KL-26-24001"}
+                </p>
                 <div
                   className={`mt-2 inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm ${
                     isOnline
@@ -158,7 +185,7 @@ const DriverPage = () => {
             </button>
           </div>
           {/* Just a Temp Placeholder for map */}
-          <div className="relative h-[400px] bg-gray-800 rounded-lg overflow-hidden">
+          {/* <div className="relative h-[400px] bg-gray-800 rounded-lg overflow-hidden">
             <svg
               className="absolute inset-0 w-full h-full"
               viewBox="0 0 100 100"
@@ -182,7 +209,8 @@ const DriverPage = () => {
               <p className="text-sm">Nearest Shelter: 2.5 km</p>
               <p className="text-xs text-gray-400">Est. time: 8 mins</p>
             </div>
-          </div>
+          </div> */}
+          <MapView />
         </div>
 
         {/* Pickup Requests */}
@@ -256,4 +284,235 @@ const DriverPage = () => {
   );
 };
 
-export default DriverPage;
+//local components
+const MapView = () => {
+  //map dependencies
+  const [disasterLocation, setDisasterLocation] = useState([
+    {
+      lng: 76.94006268199648,
+      lat: 9.851076591262078,
+    },
+    {
+      lng: 76.98006268199648,
+      lat: 9.851076591262078,
+    },
+  ]);
+  const [familyLoc, setFamilyLoc] = useState([
+    {
+      lng: 76.94006268199648,
+      lat: 9.851076591262078,
+    },
+  ]);
+
+  const [routeCoords, setRouteCoords] = useState(null);
+  const [originLoc, setOriginLoc] = useState(null);
+  const [distinaitonLoc, setDestinationLoc] = useState(null);
+
+  useEffect(() => {
+    axios
+      .post(
+        `https://api.olamaps.io/routing/v1/directions?origin=9.851076591262078,76.94006268199648&destination=9.852281642895036,76.93866793330636&api_key=${MAP_API_KEY}`
+      )
+      .then((response) => {
+        const encodedString = response.data.routes[0].overview_polyline;
+        const coords = polyline.decode(encodedString);
+        // setRouteCoords();
+        setRouteCoords([
+          ...coords.map((item) => {
+            return {
+              lng: item[1],
+              lat: item[0],
+            };
+          }),
+        ]);
+        // console.log(...coords);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+    axios
+      .get(`${BASE_URL}/admin/get-all-disaster-reports`)
+      .then((response) => {
+        setDisasterLocation(
+          response.data.disasterReports.map((item) => {
+            return {
+              lng: item.location.coordinates[0],
+              lat: item.location.coordinates[1],
+            };
+          })
+        );
+        // console.log(response.data.disasterReports);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+    axios
+      .get(`${BASE_URL}/admin/get-all-families`)
+      .then((response) => {
+        setFamilyLoc([
+          ...response.data.families.map((item) => {
+            return {
+              lng: item.address.location.coordinates[0],
+              lat: item.address.location.coordinates[1],
+            };
+          }),
+        ]);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  }, []);
+
+  useEffect(() => {
+    const olaMaps = new OlaMaps({
+      apiKey: MAP_API_KEY,
+    });
+
+    const myMap = olaMaps.init({
+      style:
+        "https://api.olamaps.io/tiles/vector/v1/styles/default-light-standard/style.json",
+      container: "map",
+      center: [disasterLocation[0].lng, disasterLocation[0].lat],
+      zoom: 15,
+      branding: false,
+    });
+
+    myMap.on("load", () => {
+      //To add multiple disaster markers, marker clustering
+      myMap.addSource("disaster-area", {
+        type: "geojson",
+
+        data: {
+          type: "FeatureCollection",
+          features: disasterLocation.map((item) => {
+            return {
+              geometry: {
+                type: "Point",
+                coordinates: [item.lng, item.lat],
+              },
+            };
+          }),
+        },
+        cluster: true,
+        clusterMaxZoom: 14,
+        clusterRadius: 50,
+      });
+
+      //Color in wider view
+      myMap.addLayer({
+        id: "clusters",
+        type: "circle",
+        source: "disaster-area",
+        filter: ["has", "point_count"],
+
+        paint: {
+          "circle-color": ["step", ["get", "point_count"], "red", 2, "red"],
+          "circle-radius": ["step", ["get", "point_count"], 20, 2, 30, 4, 40],
+        },
+      });
+
+      //Color in closer view
+      myMap.addLayer({
+        id: "unclustered-point",
+        type: "circle",
+        source: "disaster-area",
+        filter: ["!", ["has", "point_count"]],
+
+        paint: {
+          "circle-color": "red",
+          "circle-radius": 20,
+          "circle-stroke-width": 1,
+          "circle-stroke-color": "red",
+        },
+      });
+
+      //To add multiple families markers, marker clustering
+      myMap.addSource("families", {
+        type: "geojson",
+
+        data: {
+          type: "FeatureCollection",
+          features: familyLoc.map((item) => {
+            return {
+              geometry: {
+                type: "Point",
+                coordinates: [item.lng, item.lat],
+              },
+            };
+          }),
+        },
+        cluster: true,
+        clusterMaxZoom: 14,
+        clusterRadius: 50,
+      });
+
+      //Color in wider view
+      myMap.addLayer({
+        id: "family-clusters",
+        type: "circle",
+        source: "families",
+        filter: ["has", "point_count"],
+
+        paint: {
+          "circle-color": ["step", ["get", "point_count"], "blue", 2, "blue"],
+          "circle-radius": ["step", ["get", "point_count"], 20, 2, 30, 4, 40],
+        },
+      });
+
+      //Color in closer view
+      myMap.addLayer({
+        id: "family-unclustered-point",
+        type: "circle",
+        source: "families",
+        filter: ["!", ["has", "point_count"]],
+
+        paint: {
+          "circle-color": "blue",
+          "circle-radius": 20,
+          "circle-stroke-width": 1,
+          "circle-stroke-color": "blue",
+        },
+      });
+
+      //Adding connector lines between disaster and families
+      myMap.addSource("route", {
+        type: "geojson",
+        data: {
+          type: "Feature",
+          properties: {},
+          geometry: {
+            type: "LineString",
+            coordinates: [
+              // [76.94209290280338, 9.850611082222201],
+              // [77.02679450221746, 9.930319118569855],
+
+              // ...disasterLocation.map((item) => {
+              //   return [item.lng, item.lat];
+              // }),
+              // ...familyLoc.map((item) => {
+              //   return [item.lng, item.lat];
+              // }),
+              ...routeCoords.map((item) => {
+                return [item.lng, item.lat];
+              }),
+            ],
+          },
+        },
+      });
+
+      myMap.addLayer({
+        id: "route",
+        type: "line",
+        source: "route",
+        layout: { "line-join": "round", "line-cap": "round" },
+        paint: {
+          "line-color": "red",
+          "line-width": 4,
+        },
+      });
+    });
+  }, [disasterLocation, familyLoc, routeCoords]);
+  return <div id="map" style={{ height: "40rem", width: "50rem" }}></div>;
+};
+
+export default DriverDashboard;

@@ -300,10 +300,6 @@ const MapView = ({ disasterReport }) => {
       lng: 76.94006268199648,
       lat: 9.851076591262078,
     },
-    {
-      lng: 76.98006268199648,
-      lat: 9.851076591262078,
-    },
   ]);
   const [familyLoc, setFamilyLoc] = useState([
     {
@@ -317,7 +313,6 @@ const MapView = ({ disasterReport }) => {
       .get(`${BASE_URL}/admin/get-all-families`)
       .then((response) => {
         setFamilyLoc([
-          ...familyLoc,
           ...response.data.families.map((item) => {
             return {
               lng: item.address.location.coordinates[0],
@@ -474,6 +469,7 @@ const MapView = ({ disasterReport }) => {
             coordinates: [
               // [76.94209290280338, 9.850611082222201],
               // [77.02679450221746, 9.930319118569855],
+
               ...rMarkerLoc.map((item) => {
                 return [item.lng, item.lat];
               }),
