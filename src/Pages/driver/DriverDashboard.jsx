@@ -398,7 +398,7 @@ const MapView = () => {
       style:
         "https://api.olamaps.io/tiles/vector/v1/styles/default-light-standard/style.json",
       container: "map",
-      center: [disasterLocation[0].lng, disasterLocation[0].lat],
+      center: [driverLoc.lng, driverLoc.lat],
       zoom: 15,
       branding: false,
     });
@@ -416,6 +416,22 @@ const MapView = () => {
     driverMarker.on("dragend", () => {
       const lngLat = driverMarker.getLngLat();
       setDriverLoc(lngLat);
+    });
+
+    const geolocate = olaMaps.addGeolocateControls({
+      positionOptions: {
+        enableHighAccuracy: true,
+      },
+      trackUserLocation: true,
+    });
+
+    myMap.addControl(geolocate);
+
+    geolocate.on("geolocate", async (event) => {
+      setDriverLoc({
+        lng: event.coords.longitude,
+        lat: event.coords.latitude,
+      });
     });
 
     myMap.on("load", () => {
