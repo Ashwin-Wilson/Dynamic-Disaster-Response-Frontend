@@ -68,7 +68,7 @@ const DriverDashboard = () => {
         updates: { available: isOnline },
       })
       .then((response) => {
-        console.log("Driver availablity updated ", response);
+        console.log("Driver availablity updated ");
       })
       .catch((error) => {
         console.log(error);
@@ -385,6 +385,18 @@ const MapView = () => {
       .catch((error) => {
         console.log(error);
       });
+
+    axios
+      .post(`${BASE_URL}/driver/update`, {
+        token: localStorage.getItem("driverToken"),
+        updates: { location: { coordinates: [driverLoc.lng, driverLoc.lat] } },
+      })
+      .then((response) => {
+        console.log("Driver location updated ");
+      })
+      .catch((error) => {
+        console.log(error);
+      });
   }, [driverLoc]);
 
   useEffect(() => {
@@ -416,6 +428,7 @@ const MapView = () => {
     driverMarker.on("dragend", () => {
       const lngLat = driverMarker.getLngLat();
       setDriverLoc(lngLat);
+      // axios.post('/driver/update', {updates: })
     });
 
     const geolocate = olaMaps.addGeolocateControls({

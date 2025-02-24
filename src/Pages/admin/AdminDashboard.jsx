@@ -295,13 +295,19 @@ const AdminDashboard = () => {
 //local components
 const MapView = ({ disasterReport }) => {
   //map dependencies
-  const [rMarkerLoc, setrMarkerLoc] = useState([
+  const [disasterLoc, setDisasterLoc] = useState([
     {
       lng: 76.94006268199648,
       lat: 9.851076591262078,
     },
   ]);
   const [familyLoc, setFamilyLoc] = useState([
+    {
+      lng: 76.94006268199648,
+      lat: 9.851076591262078,
+    },
+  ]);
+  const [driverLoc, setDriverLoc] = useState([
     {
       lng: 76.94006268199648,
       lat: 9.851076591262078,
@@ -324,7 +330,8 @@ const MapView = ({ disasterReport }) => {
       .catch((error) => {
         console.log(error);
       });
-    setrMarkerLoc(
+
+    setDisasterLoc(
       disasterReport.map((item) => {
         return {
           lng: item.location.coordinates[0],
@@ -332,6 +339,22 @@ const MapView = ({ disasterReport }) => {
         };
       })
     );
+
+    axios
+      .get(`${BASE_URL}/admin/get-all-drivers`)
+      .then((response) => {
+        setDriverLoc([
+          ...response.data.drivers.map((item) => {
+            return {
+              lng: item.location.coordinates[0],
+              lat: item.location.coordinates[1],
+            };
+          }),
+        ]);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
   }, []);
 
   useEffect(() => {
@@ -343,7 +366,7 @@ const MapView = ({ disasterReport }) => {
       style:
         "https://api.olamaps.io/tiles/vector/v1/styles/default-light-standard/style.json",
       container: "map",
-      center: [rMarkerLoc[0].lng, rMarkerLoc[0].lat],
+      center: [disasterLoc[0].lng, disasterLoc[0].lat],
       zoom: 15,
       branding: false,
     });
@@ -358,7 +381,7 @@ const MapView = ({ disasterReport }) => {
     //     anchor: "bottom",
     //     // draggable: true,
     //   })
-    //   .setLngLat([rMarkerLoc[0].lng, rMarkerLoc[0].lat])
+    //   .setLngLat([disasterLoc[0].lng, disasterLoc[0].lat])
     //   .addTo(myMap);
 
     myMap.on("load", () => {
@@ -368,7 +391,7 @@ const MapView = ({ disasterReport }) => {
 
         data: {
           type: "FeatureCollection",
-          features: rMarkerLoc.map((item) => {
+          features: disasterLoc.map((item) => {
             return {
               geometry: {
                 type: "Point",
@@ -458,6 +481,60 @@ const MapView = ({ disasterReport }) => {
         },
       });
 
+      // /To add multiple driver markers, marker clustering
+      myMap.addSource("drivers", {
+        type: "geojson",
+
+        data: {
+          type: "FeatureCollection",
+          features: driverLoc.map((item) => {
+            return {
+              geometry: {
+                type: "Point",
+                coordinates: [item.lng, item.lat],
+              },
+            };
+          }),
+        },
+        cluster: true,
+        clusterMaxZoom: 14,
+        clusterRadius: 50,
+      });
+
+      //Color in wider view
+      myMap.addLayer({
+        id: "driver-clusters",
+        type: "circle",
+        source: "drivers",
+        filter: ["has", "point_count"],
+
+        paint: {
+          "circle-color": [
+            "step",
+            ["get", "point_count"],
+            "yellow",
+            2,
+            "yellow",
+          ],
+          "circle-radius": ["step", ["get", "point_count"], 20, 2, 30, 4, 40],
+        },
+      });
+
+      //Color in closer view
+      myMap.addLayer({
+        id: "driver-unclustered-point",
+        type: "circle",
+        source: "drivers",
+        filter: ["!", ["has", "point_count"]],
+
+        paint: {
+          "circle-color": "yellow",
+          "circle-radius": 20,
+          "circle-stroke-width": 1,
+          "circle-stroke-color": "yellow",
+        },
+      });
+
       //Adding connector lines between disaster and families
       myMap.addSource("route", {
         type: "geojson",
@@ -470,7 +547,7 @@ const MapView = ({ disasterReport }) => {
               // [76.94209290280338, 9.850611082222201],
               // [77.02679450221746, 9.930319118569855],
 
-              ...rMarkerLoc.map((item) => {
+              ...disasterLoc.map((item) => {
                 return [item.lng, item.lat];
               }),
               ...familyLoc.map((item) => {
@@ -492,7 +569,9 @@ const MapView = ({ disasterReport }) => {
         },
       });
     });
-  }, [rMarkerLoc, familyLoc]);
+    console.log(familyLoc);
+    console.log(driverLoc);
+  }, [disasterLoc, familyLoc, driverLoc]);
   return <div id="map" style={{ height: "40rem", width: "70rem" }}></div>;
 };
 

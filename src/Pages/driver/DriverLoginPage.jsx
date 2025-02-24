@@ -33,11 +33,11 @@ const DriverLoginPage = () => {
         password: formData.password,
       });
 
-      if ((response.data && response.data.token, response.data.adminId)) {
+      if ((response.data && response.data.token, response.data.driverId)) {
         // Store the token and driver details
-        localStorage.setItem("adminToken", response.data.token);
-        localStorage.setItem("adminEmail", formData.email);
-        localStorage.setItem("adminID", response.data.adminId);
+        localStorage.setItem("driverToken", response.data.token);
+        localStorage.setItem("driverEmail", formData.email);
+        localStorage.setItem("driverID", response.data.driverId);
 
         // Redirect to driver dashboard
         navigate("/driver/dashboard");
@@ -92,7 +92,9 @@ const DriverLoginPage = () => {
                 <Shield className="w-8 h-8 text-yellow-500" />
               </div>
               <h1 className="text-2xl font-bold text-white">Driver Login</h1>
-              <p className="text-gray-400 mt-2">Access system administration</p>
+              <p className="text-gray-400 mt-2">
+                Access system driveristration
+              </p>
             </div>
 
             {/* Login form */}
