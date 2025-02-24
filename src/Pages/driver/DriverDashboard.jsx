@@ -284,6 +284,26 @@ const DriverDashboard = () => {
   );
 };
 
+const createCustomMarker = (color1, color2) => {
+  // Create the main container
+  var customMarker = document.createElement("div");
+  customMarker.className = "relative w-10 h-10 rounded-full animate-pulse";
+
+  // Create outer circle
+  var outerCircle = document.createElement("div");
+  outerCircle.className = `absolute inset-0 rounded-full ${color2} `;
+
+  // Create inner circle
+  var innerCircle = document.createElement("div");
+  innerCircle.className = `absolute inset-2 rounded-full  ${color1} `;
+
+  // Append circles to marker
+  customMarker.appendChild(outerCircle);
+  customMarker.appendChild(innerCircle);
+
+  return customMarker;
+};
+
 //local components
 const MapView = () => {
   //map dependencies
@@ -303,6 +323,10 @@ const MapView = () => {
       lat: 9.851076591262078,
     },
   ]);
+  const [driverLoc, setDriverLoc] = useState({
+    lng: 76.94006268199648,
+    lat: 9.851076591262078,
+  });
 
   const [routeCoords, setRouteCoords] = useState(null);
   const [originLoc, setOriginLoc] = useState(null);
@@ -311,7 +335,7 @@ const MapView = () => {
   useEffect(() => {
     axios
       .post(
-        `https://api.olamaps.io/routing/v1/directions?origin=9.851076591262078,76.94006268199648&destination=9.852281642895036,76.93866793330636&api_key=${MAP_API_KEY}`
+        `https://api.olamaps.io/routing/v1/directions?origin=${driverLoc.lat},${driverLoc.lng}&destination=9.860771771592113,76.94740113380533&api_key=${MAP_API_KEY}`
       )
       .then((response) => {
         const encodedString = response.data.routes[0].overview_polyline;
@@ -361,9 +385,11 @@ const MapView = () => {
       .catch((error) => {
         console.log(error);
       });
-  }, []);
+  }, [driverLoc]);
 
   useEffect(() => {
+    const dMarker = createCustomMarker("bg-red-600", "bg-red-400/50");
+
     const olaMaps = new OlaMaps({
       apiKey: MAP_API_KEY,
     });
@@ -375,6 +401,21 @@ const MapView = () => {
       center: [disasterLocation[0].lng, disasterLocation[0].lat],
       zoom: 15,
       branding: false,
+    });
+
+    const driverMarker = olaMaps
+      .addMarker({
+        element: dMarker,
+        offset: [0, 6],
+        anchor: "bottom",
+        draggable: true,
+      })
+      .setLngLat([driverLoc.lng, driverLoc.lat])
+      .addTo(myMap);
+
+    driverMarker.on("dragend", () => {
+      const lngLat = driverMarker.getLngLat();
+      setDriverLoc(lngLat);
     });
 
     myMap.on("load", () => {
@@ -483,15 +524,6 @@ const MapView = () => {
           geometry: {
             type: "LineString",
             coordinates: [
-              // [76.94209290280338, 9.850611082222201],
-              // [77.02679450221746, 9.930319118569855],
-
-              // ...disasterLocation.map((item) => {
-              //   return [item.lng, item.lat];
-              // }),
-              // ...familyLoc.map((item) => {
-              //   return [item.lng, item.lat];
-              // }),
               ...routeCoords.map((item) => {
                 return [item.lng, item.lat];
               }),
@@ -506,7 +538,7 @@ const MapView = () => {
         source: "route",
         layout: { "line-join": "round", "line-cap": "round" },
         paint: {
-          "line-color": "red",
+          "line-color": "orange",
           "line-width": 4,
         },
       });
