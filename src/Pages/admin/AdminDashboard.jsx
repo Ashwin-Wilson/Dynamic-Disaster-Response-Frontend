@@ -56,10 +56,14 @@ const AdminDashboard = () => {
     within10km: { length: 3 },
     within50km: { length: 3 },
   });
+  const [familyCount, setFamilyCount] = useState(3);
+  const [driverCount, setDriverCount] = useState(3);
+
   const [adminEmail, setAdminEmail] = useState("admin@gmail.com");
   const [viewDisasterReportForm, setViewDisasterReportForm] = useState(false);
 
   const [disasterReport, setDisasterReport] = useState(null);
+  const [disasterCount, setDisasterCount] = useState(3);
   const [report, setReport] = useState();
 
   useEffect(() => {
@@ -87,13 +91,25 @@ const AdminDashboard = () => {
         })
         .then((response) => {
           setFamilyData(response.data.families);
+
           setReport(response.data);
         })
         .catch((error) => {
           console.error("Error fetching data:", error);
         });
+
+      axios.get(`${BASE_URL}/admin/get-all-families`).then((response) => {
+        // console.log(response.data.families);
+        setFamilyCount(response.data.families.length);
+      });
+
+      axios.get(`${BASE_URL}/admin/get-all-drivers`).then((response) => {
+        setDriverCount(response.data.drivers.length);
+      });
     };
+
     if (disasterReport) {
+      setDisasterCount(disasterReport.length);
       getDashboardData();
     }
   }, [disasterReport]);
@@ -101,14 +117,14 @@ const AdminDashboard = () => {
   const stats = [
     {
       title: "Active Alerts",
-      value: "3",
+      value: `${disasterCount}`,
       icon: AlertTriangle,
       iconBg: "bg-red-500/20",
       iconColor: "text-red-500",
     },
     {
       title: "Total Evacuee",
-      value: "932",
+      value: `${familyCount}`,
       icon: Users,
       iconBg: "bg-blue-500/20",
       iconColor: "text-blue-500",
@@ -136,7 +152,7 @@ const AdminDashboard = () => {
     },
     {
       title: "Pickup",
-      value: "34",
+      value: `${driverCount}`,
       icon: Car,
       iconBg: "bg-yellow-500/20",
       iconColor: "text-yellow-500",
