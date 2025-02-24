@@ -329,31 +329,13 @@ const MapView = () => {
   });
 
   const [routeCoords, setRouteCoords] = useState(null);
+  const [olaMaps, setOlaMaps] = useState(null);
+  const [globalMap, setGlobalMap] = useState(null);
+
   const [originLoc, setOriginLoc] = useState(null);
   const [distinaitonLoc, setDestinationLoc] = useState(null);
 
   useEffect(() => {
-    axios
-      .post(
-        `https://api.olamaps.io/routing/v1/directions?origin=${driverLoc.lat},${driverLoc.lng}&destination=9.860771771592113,76.94740113380533&api_key=${MAP_API_KEY}`
-      )
-      .then((response) => {
-        const encodedString = response.data.routes[0].overview_polyline;
-        const coords = polyline.decode(encodedString);
-        // setRouteCoords();
-        setRouteCoords([
-          ...coords.map((item) => {
-            return {
-              lng: item[1],
-              lat: item[0],
-            };
-          }),
-        ]);
-        // console.log(...coords);
-      })
-      .catch((error) => {
-        console.log(error);
-      });
     axios
       .get(`${BASE_URL}/admin/get-all-disaster-reports`)
       .then((response) => {
@@ -365,7 +347,6 @@ const MapView = () => {
             };
           })
         );
-        // console.log(response.data.disasterReports);
       })
       .catch((error) => {
         console.log(error);
@@ -378,6 +359,93 @@ const MapView = () => {
             return {
               lng: item.address.location.coordinates[0],
               lat: item.address.location.coordinates[1],
+            };
+          }),
+        ]);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  }, []);
+
+  //creating an instance for olaMaps
+  useEffect(() => {
+    setOlaMaps(
+      new OlaMaps({
+        apiKey: MAP_API_KEY,
+      })
+    );
+  }, []);
+
+  //initializing the global map when the olaMaps instance is ready
+  useEffect(() => {
+    if (olaMaps) {
+      setGlobalMap(
+        olaMaps.init({
+          style:
+            "https://api.olamaps.io/tiles/vector/v1/styles/default-light-standard/style.json",
+          container: "map",
+          center: [driverLoc.lng, driverLoc.lat],
+          zoom: 15,
+          branding: false,
+        })
+      );
+    }
+  }, [olaMaps]);
+
+  //adding draggable diver marker
+  useEffect(() => {
+    if (globalMap) {
+      const dMarker = createCustomMarker("bg-red-600", "bg-red-400/50");
+
+      const driverMarker = olaMaps
+        .addMarker({
+          element: dMarker,
+          offset: [0, 6],
+          anchor: "bottom",
+          draggable: true,
+        })
+        .setLngLat([driverLoc.lng, driverLoc.lat])
+        .addTo(globalMap);
+
+      driverMarker.on("dragend", () => {
+        const lngLat = driverMarker.getLngLat();
+        globalMap.setCenter([lngLat.lng, lngLat.lat]);
+        setDriverLoc(lngLat);
+      });
+
+      const geolocate = olaMaps.addGeolocateControls({
+        positionOptions: {
+          enableHighAccuracy: true,
+        },
+        trackUserLocation: true,
+      });
+
+      globalMap.addControl(geolocate);
+
+      geolocate.on("geolocate", async (event) => {
+        setDriverLoc({
+          lng: event.coords.longitude,
+          lat: event.coords.latitude,
+        });
+      });
+    }
+  }, [globalMap]);
+
+  //Updating the driver location in DB and getting the route on driver location change
+  useEffect(() => {
+    axios
+      .post(
+        `https://api.olamaps.io/routing/v1/directions?origin=${driverLoc.lat},${driverLoc.lng}&destination=9.860771771592113,76.94740113380533&api_key=${MAP_API_KEY}`
+      )
+      .then((response) => {
+        const encodedString = response.data.routes[0].overview_polyline;
+        const coords = polyline.decode(encodedString);
+        setRouteCoords([
+          ...coords.map((item) => {
+            return {
+              lng: item[1],
+              lat: item[0],
             };
           }),
         ]);
@@ -399,180 +467,177 @@ const MapView = () => {
       });
   }, [driverLoc]);
 
+  //Adding the markers and routes in the global map
   useEffect(() => {
-    const dMarker = createCustomMarker("bg-red-600", "bg-red-400/50");
+    if (olaMaps && globalMap && routeCoords) {
+      globalMap.on("load", () => {
+        //To add multiple disaster markers, marker clustering
+        globalMap.addSource("disaster-area", {
+          type: "geojson",
 
-    const olaMaps = new OlaMaps({
-      apiKey: MAP_API_KEY,
-    });
-
-    const myMap = olaMaps.init({
-      style:
-        "https://api.olamaps.io/tiles/vector/v1/styles/default-light-standard/style.json",
-      container: "map",
-      center: [driverLoc.lng, driverLoc.lat],
-      zoom: 15,
-      branding: false,
-    });
-
-    const driverMarker = olaMaps
-      .addMarker({
-        element: dMarker,
-        offset: [0, 6],
-        anchor: "bottom",
-        draggable: true,
-      })
-      .setLngLat([driverLoc.lng, driverLoc.lat])
-      .addTo(myMap);
-
-    driverMarker.on("dragend", () => {
-      const lngLat = driverMarker.getLngLat();
-      setDriverLoc(lngLat);
-      // axios.post('/driver/update', {updates: })
-    });
-
-    const geolocate = olaMaps.addGeolocateControls({
-      positionOptions: {
-        enableHighAccuracy: true,
-      },
-      trackUserLocation: true,
-    });
-
-    myMap.addControl(geolocate);
-
-    geolocate.on("geolocate", async (event) => {
-      setDriverLoc({
-        lng: event.coords.longitude,
-        lat: event.coords.latitude,
-      });
-    });
-
-    myMap.on("load", () => {
-      //To add multiple disaster markers, marker clustering
-      myMap.addSource("disaster-area", {
-        type: "geojson",
-
-        data: {
-          type: "FeatureCollection",
-          features: disasterLocation.map((item) => {
-            return {
-              geometry: {
-                type: "Point",
-                coordinates: [item.lng, item.lat],
-              },
-            };
-          }),
-        },
-        cluster: true,
-        clusterMaxZoom: 14,
-        clusterRadius: 50,
-      });
-
-      //Color in wider view
-      myMap.addLayer({
-        id: "clusters",
-        type: "circle",
-        source: "disaster-area",
-        filter: ["has", "point_count"],
-
-        paint: {
-          "circle-color": ["step", ["get", "point_count"], "red", 2, "red"],
-          "circle-radius": ["step", ["get", "point_count"], 20, 2, 30, 4, 40],
-        },
-      });
-
-      //Color in closer view
-      myMap.addLayer({
-        id: "unclustered-point",
-        type: "circle",
-        source: "disaster-area",
-        filter: ["!", ["has", "point_count"]],
-
-        paint: {
-          "circle-color": "red",
-          "circle-radius": 20,
-          "circle-stroke-width": 1,
-          "circle-stroke-color": "red",
-        },
-      });
-
-      //To add multiple families markers, marker clustering
-      myMap.addSource("families", {
-        type: "geojson",
-
-        data: {
-          type: "FeatureCollection",
-          features: familyLoc.map((item) => {
-            return {
-              geometry: {
-                type: "Point",
-                coordinates: [item.lng, item.lat],
-              },
-            };
-          }),
-        },
-        cluster: true,
-        clusterMaxZoom: 14,
-        clusterRadius: 50,
-      });
-
-      //Color in wider view
-      myMap.addLayer({
-        id: "family-clusters",
-        type: "circle",
-        source: "families",
-        filter: ["has", "point_count"],
-
-        paint: {
-          "circle-color": ["step", ["get", "point_count"], "blue", 2, "blue"],
-          "circle-radius": ["step", ["get", "point_count"], 20, 2, 30, 4, 40],
-        },
-      });
-
-      //Color in closer view
-      myMap.addLayer({
-        id: "family-unclustered-point",
-        type: "circle",
-        source: "families",
-        filter: ["!", ["has", "point_count"]],
-
-        paint: {
-          "circle-color": "blue",
-          "circle-radius": 20,
-          "circle-stroke-width": 1,
-          "circle-stroke-color": "blue",
-        },
-      });
-
-      //Adding connector lines between disaster and families
-      myMap.addSource("route", {
-        type: "geojson",
-        data: {
-          type: "Feature",
-          properties: {},
-          geometry: {
-            type: "LineString",
-            coordinates: [
-              ...routeCoords.map((item) => {
-                return [item.lng, item.lat];
-              }),
-            ],
+          data: {
+            type: "FeatureCollection",
+            features: disasterLocation.map((item) => {
+              return {
+                geometry: {
+                  type: "Point",
+                  coordinates: [item.lng, item.lat],
+                },
+              };
+            }),
           },
-        },
+          cluster: true,
+          clusterMaxZoom: 14,
+          clusterRadius: 50,
+        });
+
+        //Color in wider view
+        globalMap.addLayer({
+          id: "clusters",
+          type: "circle",
+          source: "disaster-area",
+          filter: ["has", "point_count"],
+
+          paint: {
+            "circle-color": ["step", ["get", "point_count"], "red", 2, "red"],
+            "circle-radius": ["step", ["get", "point_count"], 20, 2, 30, 4, 40],
+          },
+        });
+
+        //Color in closer view
+        globalMap.addLayer({
+          id: "unclustered-point",
+          type: "circle",
+          source: "disaster-area",
+          filter: ["!", ["has", "point_count"]],
+
+          paint: {
+            "circle-color": "red",
+            "circle-radius": 20,
+            "circle-stroke-width": 1,
+            "circle-stroke-color": "red",
+          },
+        });
+
+        //To add multiple families markers, marker clustering
+        globalMap.addSource("families", {
+          type: "geojson",
+          data: {
+            type: "FeatureCollection",
+            features: familyLoc.map((item) => {
+              return {
+                geometry: {
+                  type: "Point",
+                  coordinates: [item.lng, item.lat],
+                },
+              };
+            }),
+          },
+          cluster: true,
+          clusterMaxZoom: 14,
+          clusterRadius: 50,
+        });
+
+        //Color in wider view
+        globalMap.addLayer({
+          id: "family-clusters",
+          type: "circle",
+          source: "families",
+          filter: ["has", "point_count"],
+
+          paint: {
+            "circle-color": ["step", ["get", "point_count"], "blue", 2, "blue"],
+            "circle-radius": ["step", ["get", "point_count"], 20, 2, 30, 4, 40],
+          },
+        });
+
+        //Color in closer view
+        globalMap.addLayer({
+          id: "family-unclustered-point",
+          type: "circle",
+          source: "families",
+          filter: ["!", ["has", "point_count"]],
+          paint: {
+            "circle-color": "blue",
+            "circle-radius": 20,
+            "circle-stroke-width": 1,
+            "circle-stroke-color": "blue",
+          },
+        });
+
+        globalMap.addSource("route", {
+          type: "geojson",
+          data: {
+            type: "Feature",
+            properties: {},
+            geometry: {
+              type: "LineString",
+              coordinates: [
+                ...routeCoords.map((item) => {
+                  return [item.lng, item.lat];
+                }),
+              ],
+            },
+          },
+        });
+
+        globalMap.addLayer({
+          id: "route",
+          type: "line",
+          source: "route",
+          layout: { "line-join": "round", "line-cap": "round" },
+          paint: {
+            "line-color": "orange",
+            "line-width": 4,
+          },
+        });
       });
 
-      myMap.addLayer({
-        id: "route",
-        type: "line",
-        source: "route",
-        layout: { "line-join": "round", "line-cap": "round" },
-        paint: {
-          "line-color": "orange",
-          "line-width": 4,
-        },
+      globalMap.on("moveend", () => {
+        globalMap.removeLayer("route");
+        globalMap.removeSource("route");
+        globalMap.addSource("route", {
+          type: "geojson",
+          data: {
+            type: "Feature",
+            properties: {},
+            geometry: {
+              type: "LineString",
+              coordinates: [
+                ...routeCoords.map((item) => {
+                  return [item.lng, item.lat];
+                }),
+              ],
+            },
+          },
+        });
+
+        globalMap.addLayer({
+          id: "route",
+          type: "line",
+          source: "route",
+          layout: { "line-join": "round", "line-cap": "round" },
+          data: {
+            type: "Feature",
+            properties: {},
+            geometry: {
+              type: "LineString",
+              coordinates: [
+                ...routeCoords.map((item) => {
+                  return [item.lng, item.lat];
+                }),
+              ],
+            },
+          },
+          paint: {
+            "line-color": "orange",
+            "line-width": 4,
+          },
+        });
       });
-    });
-  }, [disasterLocation, familyLoc, routeCoords]);
+    }
+  }, [familyLoc, disasterLocation, olaMaps, globalMap, routeCoords]);
+
   return <div id="map" style={{ height: "40rem", width: "50rem" }}></div>;
 };
 
