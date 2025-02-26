@@ -46,7 +46,8 @@ const FamilyListView = () => {
   useEffect(() => {
     if (familyData && disasterLoc) {
       if (Array.isArray(familyData)) {
-        const sorted = sortFamiliesByNewPriorities(familyData, disasterLoc);
+        // Use topological sorting instead of priority-based sorting
+        const sorted = buildDependencyGraphAndSort(familyData, disasterLoc);
         setSortedFamilies(sorted);
         setFamilies(familyData);
       } else {
@@ -71,23 +72,16 @@ const FamilyListView = () => {
     return R * c; // Distance in meters
   };
 
-  // Calculate disaster proximity score - closer = higher score
-  const calculateDisasterProximityScore = (family, disasterLocation) => {
-    const familyCoords = family.address.location.coordinates;
-    const distance = calculateDistance(familyCoords, disasterLocation);
-
-    // Normalize distance into a score (closer = higher score)
-    // Max score of 100 for families at the disaster location
-    // Score decreases as distance increases
-    const proximityScore = Math.max(0, 100 - (distance / 1000) * 10); // 10 points per km away
-
-    return {
-      proximityScore,
-      distance,
-    };
+  // Determine if a family is vulnerable
+  const isVulnerableFamily = (family) => {
+    return (
+      family.family_members.some((m) => m.is_vulnerable) ||
+      family.medical_requirements.dependent_on_equipment ||
+      family.medical_requirements.immediate_medical_assistance_needed
+    );
   };
 
-  // Calculate family's vulnerability score
+  // Calculate family's vulnerability score (kept for display purposes)
   const calculateVulnerabilityScore = (family) => {
     let score = 0;
 
@@ -116,91 +110,170 @@ const FamilyListView = () => {
     return score;
   };
 
-  // Calculate proximity score to vulnerable families
-  const calculateProximityToVulnerableFamilies = (family, allFamilies) => {
-    // Find vulnerable families (excluding the current family)
-    const vulnerableFamilies = allFamilies.filter(
-      (f) =>
-        f._id !== family._id &&
-        (f.family_members.some((m) => m.is_vulnerable) ||
-          f.medical_requirements.dependent_on_equipment ||
-          f.medical_requirements.immediate_medical_assistance_needed)
-    );
+  // Calculate disaster proximity score (kept for display purposes)
+  const calculateDisasterProximityScore = (family, disasterLocation) => {
+    const familyCoords = family.address.location.coordinates;
+    const distance = calculateDistance(familyCoords, disasterLocation);
+    const proximityScore = Math.max(0, 100 - (distance / 1000) * 10); // 10 points per km away
 
-    if (vulnerableFamilies.length === 0) {
-      return 0; // No vulnerable families to be close to
-    }
-
-    // Calculate distances to all vulnerable families
-    const distances = vulnerableFamilies.map((vulnFamily) => {
-      return calculateDistance(
-        family.address.location.coordinates,
-        vulnFamily.address.location.coordinates
-      );
-    });
-
-    // Get the closest vulnerable family distance
-    const minDistance = Math.min(...distances);
-
-    // Convert to proximity score (closer = higher score)
-    // Max score of 100 for being at the same location
-    // Score decreases as distance increases
-    const proximityScore = Math.max(0, 100 - (minDistance / 1000) * 20); // 20 points per km away
-
-    return proximityScore;
+    return {
+      proximityScore,
+      distance,
+    };
   };
 
-  const sortFamiliesByNewPriorities = (familiesData, disasterLocation) => {
-    // Step 1: Calculate all scores
-    const familiesWithScores = familiesData.map((family) => {
-      // 1. Proximity to disaster
-      const { proximityScore: disasterProximityScore, distance } =
-        calculateDisasterProximityScore(family, disasterLocation);
+  // Build dependency graph and perform topological sorting
+  const buildDependencyGraphAndSort = (familiesData, disasterLocation) => {
+    // Step 1: Classify families as vulnerable or non-vulnerable
+    const vulnerableFamilies = [];
+    const nonVulnerableFamilies = [];
 
-      // 2. Vulnerability score
+    familiesData.forEach((family) => {
+      if (isVulnerableFamily(family)) {
+        vulnerableFamilies.push(family);
+      } else {
+        nonVulnerableFamilies.push(family);
+      }
+    });
+
+    // Step 2: Calculate disaster proximity for all families (for prioritization)
+    const familiesWithProximity = familiesData.map((family) => {
+      const { proximityScore, distance } = calculateDisasterProximityScore(
+        family,
+        disasterLocation
+      );
       const vulnerabilityScore = calculateVulnerabilityScore(family);
 
       return {
         ...family,
-        disasterProximityScore,
+        disasterProximityScore: proximityScore,
         vulnerabilityScore,
         distance,
       };
     });
 
-    // Step 2: Calculate proximity to vulnerable families
-    const familiesWithAllScores = familiesWithScores.map((family) => {
-      const proximityToVulnerableScore = calculateProximityToVulnerableFamilies(
-        family,
-        familiesWithScores
-      );
+    // Step 3: Build adjacency list representing dependencies
+    // Each vulnerable family depends on its nearest non-vulnerable family
+    const graph = {};
+    const inDegree = {};
 
-      // Calculate final priority score with weights:
-      // - 50% for disaster proximity (highest priority)
-      // - 30% for vulnerability score
-      // - 20% for proximity to vulnerable families
-      const finalPriorityScore =
-        family.disasterProximityScore * 0.5 +
-        family.vulnerabilityScore * 0.3 +
-        proximityToVulnerableScore * 0.2;
+    // Initialize graph for all families
+    familiesData.forEach((family) => {
+      graph[family._id] = [];
+      inDegree[family._id] = 0;
+    });
+
+    // For each vulnerable family, find the nearest non-vulnerable family
+    // and create a dependency (edge)
+    vulnerableFamilies.forEach((vulnFamily) => {
+      if (nonVulnerableFamilies.length === 0) return;
+
+      let nearestNonVuln = null;
+      let minDistance = Infinity;
+
+      nonVulnerableFamilies.forEach((nonVulnFamily) => {
+        const distance = calculateDistance(
+          vulnFamily.address.location.coordinates,
+          nonVulnFamily.address.location.coordinates
+        );
+
+        if (distance < minDistance) {
+          minDistance = distance;
+          nearestNonVuln = nonVulnFamily;
+        }
+      });
+
+      if (nearestNonVuln) {
+        // Create dependency: vulnerable family depends on non-vulnerable family
+        // So non-vulnerable family must be evacuated first
+        graph[nearestNonVuln._id].push(vulnFamily._id);
+        inDegree[vulnFamily._id]++;
+      }
+    });
+
+    // Step 4: Apply Kahn's algorithm for topological sorting
+    const topologicalOrder = [];
+    const queue = [];
+
+    // Start with nodes that have no dependencies (inDegree = 0)
+    Object.keys(inDegree).forEach((familyId) => {
+      if (inDegree[familyId] === 0) {
+        queue.push(familyId);
+      }
+    });
+
+    // Sort queue by disaster proximity (families closer to disaster get priority)
+    queue.sort((a, b) => {
+      const familyA = familiesWithProximity.find((f) => f._id === a);
+      const familyB = familiesWithProximity.find((f) => f._id === b);
+      return familyB.disasterProximityScore - familyA.disasterProximityScore;
+    });
+
+    // Process the queue
+    while (queue.length > 0) {
+      // Take the family with highest priority (closest to disaster)
+      const current = queue.shift();
+      topologicalOrder.push(current);
+
+      // For each dependent family
+      graph[current].forEach((dependentFamilyId) => {
+        inDegree[dependentFamilyId]--;
+
+        // If all dependencies are satisfied, add to queue
+        if (inDegree[dependentFamilyId] === 0) {
+          queue.push(dependentFamilyId);
+        }
+      });
+
+      // Re-sort the queue each time to ensure disaster proximity priority
+      queue.sort((a, b) => {
+        const familyA = familiesWithProximity.find((f) => f._id === a);
+        const familyB = familiesWithProximity.find((f) => f._id === b);
+        return familyB.disasterProximityScore - familyA.disasterProximityScore;
+      });
+    }
+
+    // Check for cycles in the graph
+    if (topologicalOrder.length !== Object.keys(graph).length) {
+      console.error("Graph has cycles! Topological sort not possible.");
+      // Fall back to proximity-based sorting if topological sort fails
+      return familiesWithProximity.sort(
+        (a, b) => b.disasterProximityScore - a.disasterProximityScore
+      );
+    }
+
+    // Map the order back to the full family objects with scores for display
+    return topologicalOrder.map((familyId) => {
+      const family = familiesWithProximity.find((f) => f._id === familyId);
+
+      // Add dependency information
+      const dependencies = graph[familyId].map((depId) => {
+        const depFamily = familiesData.find((f) => f._id === depId);
+        return depFamily.family_name;
+      });
+
+      // Add who this family depends on
+      const dependsOn = Object.entries(graph)
+        .filter(([_, deps]) => deps.includes(familyId))
+        .map(([parentId, _]) => {
+          const parentFamily = familiesData.find((f) => f._id === parentId);
+          return parentFamily.family_name;
+        });
 
       return {
         ...family,
-        proximityToVulnerableScore,
-        finalPriorityScore,
+        dependencies,
+        dependsOn: dependsOn.length > 0 ? dependsOn[0] : null,
+        // Calculate a display score that combines topological order with proximity
+        finalPriorityScore: family.disasterProximityScore,
       };
     });
-
-    // Step 3: Sort by priority score (descending)
-    return familiesWithAllScores.sort(
-      (a, b) => b.finalPriorityScore - a.finalPriorityScore
-    );
   };
 
   return (
     <div className="min-h-screen bg-slate-900 p-6">
       <h2 className="text-4xl font-bold text-white mb-6">
-        Families List (Evacuation Priority)
+        Families List (Evacuation Priority - Topological Order)
       </h2>
       <div className="grid gap-4">
         {sortedFamilies.map((family, index) => (
@@ -269,10 +342,14 @@ const FamilyListView = () => {
 
               <div>
                 <h3 className="font-semibold text-gray-400">
-                  Proximity to Vulnerable
+                  Dependency Status
                 </h3>
                 <p className="text-blue-500 font-semibold">
-                  {family.proximityToVulnerableScore?.toFixed(1) || "0.0"}
+                  {isVulnerableFamily(family)
+                    ? `Depends on: ${family.dependsOn || "None"}`
+                    : `Supporting: ${
+                        family.dependencies?.length || 0
+                      } families`}
                 </p>
               </div>
             </div>
@@ -293,13 +370,17 @@ const FamilyListView = () => {
             </div>
 
             {/* Priority ranking */}
-            <div className="absolute bottom-4 right-2  bg-blue-600 text-white font-bold rounded-full h-8 w-8 flex items-center justify-center">
+            <div className="absolute bottom-4 right-2 bg-blue-600 text-white font-bold rounded-full h-8 w-8 flex items-center justify-center">
               {index + 1}
             </div>
 
-            {/* Final priority score */}
-            <div className="absolute bottom-4 right-12  bg-green-600 text-white font-bold rounded-md px-2 py-1 text-sm">
-              Score: {family.finalPriorityScore?.toFixed(1)}
+            {/* Family type indicator */}
+            <div
+              className={`absolute bottom-4 right-12 ${
+                isVulnerableFamily(family) ? "bg-red-600" : "bg-green-600"
+              } text-white font-bold rounded-md px-2 py-1 text-sm`}
+            >
+              {isVulnerableFamily(family) ? "Vulnerable" : "Support"}
             </div>
           </div>
         ))}
