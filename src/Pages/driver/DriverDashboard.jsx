@@ -196,8 +196,9 @@ const DriverDashboard = () => {
         <div className="lg:col-span-3">
           <div className="bg-[#1e2538] rounded-lg p-6 shadow-lg">
             <h3 className="text-lg font-semibold mb-4">Pickup Requests</h3>
-            <div className="space-y-4">
+            <div className="grid grid-cols-2 ">
               <FamilyListView setDestinationLoc={setDestinationLoc} />
+              <ShelterListView setDestinationLoc={setDestinationLoc} />
             </div>
           </div>
         </div>
@@ -249,6 +250,10 @@ const MapView = ({ destinaitonLoc }) => {
     lng: 76.94006268199648,
     lat: 9.851076591262078,
   });
+  const [shelterLoc, setShelterLoc] = useState({
+    lng: 76.94006268199648,
+    lat: 9.851076591262078,
+  });
 
   const [routeCoords, setRouteCoords] = useState(null);
   const [olaMaps, setOlaMaps] = useState(null);
@@ -275,6 +280,22 @@ const MapView = ({ destinaitonLoc }) => {
       .then((response) => {
         setFamilyLoc([
           ...response.data.families.map((item) => {
+            return {
+              lng: item.address.location.coordinates[0],
+              lat: item.address.location.coordinates[1],
+            };
+          }),
+        ]);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+
+    axios
+      .get(`${BASE_URL}/driver/get-all-shelters`)
+      .then((response) => {
+        setShelterLoc([
+          ...response.data.Shelters.map((item) => {
             return {
               lng: item.address.location.coordinates[0],
               lat: item.address.location.coordinates[1],
@@ -484,6 +505,58 @@ const MapView = ({ destinaitonLoc }) => {
           },
         });
 
+        //To add multiple families markers, marker clustering
+        globalMap.addSource("shelters", {
+          type: "geojson",
+          data: {
+            type: "FeatureCollection",
+            features: shelterLoc.map((item) => {
+              return {
+                geometry: {
+                  type: "Point",
+                  coordinates: [item.lng, item.lat],
+                },
+              };
+            }),
+          },
+          cluster: true,
+          clusterMaxZoom: 14,
+          clusterRadius: 50,
+        });
+
+        //Color in wider view
+        globalMap.addLayer({
+          id: "shelters-clusters",
+          type: "circle",
+          source: "shelters",
+          filter: ["has", "point_count"],
+
+          paint: {
+            "circle-color": [
+              "step",
+              ["get", "point_count"],
+              "green",
+              2,
+              "green",
+            ],
+            "circle-radius": ["step", ["get", "point_count"], 20, 2, 30, 4, 40],
+          },
+        });
+
+        //Color in closer view
+        globalMap.addLayer({
+          id: "shelters-unclustered-point",
+          type: "circle",
+          source: "shelters",
+          filter: ["!", ["has", "point_count"]],
+          paint: {
+            "circle-color": "green",
+            "circle-radius": 20,
+            "circle-stroke-width": 1,
+            "circle-stroke-color": "green",
+          },
+        });
+
         globalMap.addSource("route", {
           type: "geojson",
           data: {
@@ -555,7 +628,14 @@ const MapView = ({ destinaitonLoc }) => {
         });
       });
     }
-  }, [familyLoc, disasterLocation, olaMaps, globalMap, routeCoords]);
+  }, [
+    familyLoc,
+    disasterLocation,
+    shelterLoc,
+    olaMaps,
+    globalMap,
+    routeCoords,
+  ]);
 
   return <div id="map" style={{ height: "40rem", width: "50rem" }}></div>;
 };
@@ -952,6 +1032,82 @@ const FamilyListView = ({ setDestinationLoc }) => {
           </div>
         ))}
       </div>
+    </div>
+  );
+};
+
+const ShelterListView = ({ setDestinationLoc }) => {
+  const [shelters, setShelters] = useState(null);
+  useEffect(() => {
+    axios
+      .get(`${BASE_URL}/driver/get-all-shelters`)
+      .then((response) => {
+        setShelters(response.data.Shelters);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  });
+
+  return (
+    <div className="min-h-screen bg-slate-900 p-6">
+      <h2 className="text-4xl font-bold text-white mb-6">Shelters List View</h2>
+      {shelters &&
+        shelters.map((shelter, index) => (
+          <div
+            key={shelter._id}
+            className="bg-slate-800/50 p-6 rounded-lg border border-slate-700 hover:border-slate-600 hover:bg-slate-800/70 transition-all duration-300 relative"
+            onClick={() => {
+              // console.log(family.address.location);
+              setDestinationLoc({
+                lng: shelter.address.location.coordinates[0],
+                lat: shelter.address.location.coordinates[1],
+              });
+            }}
+          >
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div>
+                <h3 className="font-semibold text-gray-400">Shelter Name</h3>
+                <p className="text-white">{shelter.shelter_name}</p>
+              </div>
+
+              <div>
+                <h3 className="font-semibold text-gray-400">Location</h3>
+                <p className="text-white">
+                  {shelter.address.city}, {shelter.address.state}
+                </p>
+              </div>
+
+              <div>
+                <h3 className="font-semibold text-gray-400">Occupancy</h3>
+                <p className="text-white">
+                  {shelter.capacity.current_occupancy}/
+                  {shelter.capacity.max_capacity}
+                </p>
+              </div>
+
+              <div>
+                <h3 className="font-semibold text-gray-400">Supply Status</h3>
+
+                <p className="text-white">Food:{shelter.supply_status.food}</p>
+
+                <p className="text-white">
+                  Water: {shelter.supply_status.water}
+                </p>
+                <p className="text-white">
+                  Medicine: {shelter.supply_status.medicine}
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <h3 className="font-semibold text-gray-400">Sanitaiton</h3>
+                <p className="text-white">{shelter.sanitation}</p>
+              </div>
+            </div>
+          </div>
+        ))}
     </div>
   );
 };
