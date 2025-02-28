@@ -1,5 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import ShelterManagementForm from "../../Components/ShelterUpdateForm";
+import axios from "axios";
 import {
   Building2,
   Users,
@@ -13,13 +15,66 @@ import {
   Package,
 } from "lucide-react";
 
-const CareTaker = () => {
+const BASE_URL = import.meta.env.VITE_BASE_URL;
+
+function formatDateTime(dateTimeString) {
+  const date = new Date(dateTimeString);
+
+  // Format date: Month Day, Year
+  const formattedDate = date.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+
+  // Format time: Hours:Minutes AM/PM
+  const formattedTime = date.toLocaleTimeString("en-US", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+
+  return `${formattedDate} at ${formattedTime}`;
+}
+
+const CareTakerDashboard = () => {
+  const [viewShlterUpdateForm, setViewShlterUpdateForm] = useState(false);
+  const [shelterId, setShelterId] = useState(localStorage.getItem("shelterId"));
+
   const navigate = useNavigate();
-  const [shelterStats] = useState({
-    occupancy: "234/500",
-    supplies: "85%",
-    sanitationStatus: "Good",
-    lastInspection: "2 hours ago",
+  // const [shelterStats] = useState({
+  //   occupancy: "234/500",
+  //   supplies: "85%",
+  //   sanitationStatus: "Good",
+  //   lastInspection: "2 hours ago",
+  // });
+
+  const [shelterDetails, setShelterDetails] = useState({
+    shelter_name: "Federal Shelter",
+    address: {
+      street: "Idukki",
+      city: "Idukki",
+      state: "Kerala",
+      postal_code: "1234556",
+      location: {
+        coordinates: [76.9554446372482, 9.85038951939373],
+        type: "Point",
+      },
+    },
+    capacity: {
+      max_capacity: 500,
+      current_occupancy: 250,
+      available_beds: 296,
+    },
+    medical_cases: { count: 0, details: [] },
+    supply_status: {
+      food: 100,
+      water: 100,
+      medicine: 100,
+      other_supplies: 100,
+    },
+    sanitation: "good",
+    last_inspection: "2025-02-28T07:30:19.521Z",
+    status: "active",
   });
 
   const [dailyReports] = useState([
@@ -53,33 +108,55 @@ const CareTaker = () => {
   const stats = [
     {
       title: "Total Occupants",
-      count: "234",
+      count: `${shelterDetails.capacity.current_occupancy}`,
       icon: Users,
       color: "text-blue-500",
       bgColor: "bg-blue-500/20",
     },
     {
       title: "Medical Cases",
-      count: "12",
+      count: `${shelterDetails.medical_cases.count}`,
       icon: HeartPulse,
       color: "text-red-500",
       bgColor: "bg-red-500/20",
     },
     {
       title: "Available Beds",
-      count: "266",
+      count: `${shelterDetails.capacity.available_beds}`,
       icon: Bed,
       color: "text-green-500",
       bgColor: "bg-green-500/20",
     },
     {
       title: "Supply Status",
-      count: "85%",
+      count: ` ${
+        (shelterDetails.supply_status.food +
+          shelterDetails.supply_status.water +
+          shelterDetails.supply_status.medicine +
+          shelterDetails.supply_status.other_supplies) /
+        4
+      }
+                    %`,
       icon: Package,
       color: "text-yellow-500",
       bgColor: "bg-yellow-500/20",
     },
   ];
+
+  useEffect(() => {
+    if (shelterId) {
+      axios
+        .get(`${BASE_URL}/caretaker/shelter`, {
+          headers: { shelterId: shelterId },
+        })
+        .then((response) => {
+          setShelterDetails(response.data.shelter);
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    }
+  }, [shelterId]);
 
   const handleLogout = () => {
     navigate("/");
@@ -137,7 +214,9 @@ const CareTaker = () => {
                   <ShieldCheck className="w-8 h-8 text-[#1a1f2e]" />
                 </div>
                 <div>
-                  <h2 className="text-xl font-bold">John Anderson</h2>
+                  <h2 className="text-xl font-bold">
+                    {localStorage.getItem("caretakerName") ?? "Thomas"}
+                  </h2>
                   <p className="text-gray-400">ID: CT-2024-001</p>
                   <p className="text-gray-400">Central Community Shelter</p>
                   <div className="mt-2 inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm bg-green-500/20 text-green-500">
@@ -166,11 +245,13 @@ const CareTaker = () => {
                 <button className="w-full bg-purple-500/10 text-purple-500 py-2 rounded-lg font-semibold hover:bg-purple-500/20 transition-colors">
                   Submit Daily Report
                 </button>
-                <button className="w-full bg-yellow-500/10 text-yellow-500 py-2 rounded-lg font-semibold hover:bg-yellow-500/20 transition-colors">
-                  Request Supplies
-                </button>
-                <button className="w-full bg-red-500/10 text-red-500 py-2 rounded-lg font-semibold hover:bg-red-500/20 transition-colors">
-                  Report Emergency
+                <button
+                  className="w-full bg-yellow-500/10 text-yellow-500 py-2 rounded-lg font-semibold hover:bg-yellow-500/20 transition-colors"
+                  onClick={() => {
+                    setViewShlterUpdateForm(!viewShlterUpdateForm);
+                  }}
+                >
+                  Update Shelter Details
                 </button>
               </div>
             </div>
@@ -184,22 +265,32 @@ const CareTaker = () => {
               <div className="grid grid-cols-2 gap-4">
                 <div className="p-4 border border-gray-700 rounded-lg">
                   <p className="text-gray-400">Occupancy</p>
-                  <p className="text-xl font-bold">{shelterStats.occupancy}</p>
+                  <p className="text-xl font-bold">
+                    {shelterDetails.capacity.current_occupancy}/
+                    {shelterDetails.capacity.max_capacity}
+                  </p>
                 </div>
                 <div className="p-4 border border-gray-700 rounded-lg">
                   <p className="text-gray-400">Supplies</p>
-                  <p className="text-xl font-bold">{shelterStats.supplies}</p>
+                  <p className="text-xl font-bold">
+                    {(shelterDetails.supply_status.food +
+                      shelterDetails.supply_status.water +
+                      shelterDetails.supply_status.medicine +
+                      shelterDetails.supply_status.other_supplies) /
+                      4}
+                    %
+                  </p>
                 </div>
                 <div className="p-4 border border-gray-700 rounded-lg">
                   <p className="text-gray-400">Sanitation</p>
                   <p className="text-xl font-bold">
-                    {shelterStats.sanitationStatus}
+                    {shelterDetails.sanitation}
                   </p>
                 </div>
                 <div className="p-4 border border-gray-700 rounded-lg">
                   <p className="text-gray-400">Last Inspection</p>
                   <p className="text-xl font-bold">
-                    {shelterStats.lastInspection}
+                    {formatDateTime(shelterDetails.last_inspection)}
                   </p>
                 </div>
               </div>
@@ -245,8 +336,15 @@ const CareTaker = () => {
           </div>
         </div>
       </main>
+      {viewShlterUpdateForm === true && (
+        <ShelterManagementForm
+          onClose={() => setViewShlterUpdateForm(false)}
+          shelterId={shelterId}
+          isUpdate={shelterId ? true : false}
+        />
+      )}
     </div>
   );
 };
 
-export default CareTaker;
+export default CareTakerDashboard;

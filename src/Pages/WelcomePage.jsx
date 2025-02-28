@@ -78,7 +78,7 @@ const WelcomePage = () => {
 
         {/* Driver Card */}
         <div
-          onClick={() => navigate("/driver/dashboard")}
+          onClick={() => navigate("/driver/signup")}
           className="bg-slate-800/50 rounded-lg p-6 cursor-pointer
                     hover:bg-slate-800/70 transition-all duration-300
                     border border-slate-700 hover:border-slate-600"
@@ -96,7 +96,7 @@ const WelcomePage = () => {
 
         {/* Caretaker Card */}
         <div
-          onClick={() => navigate("/caretaker/dashboard")}
+          onClick={() => navigate("/caretaker/signup")}
           className="bg-slate-800/50 rounded-lg p-6 cursor-pointer
                     hover:bg-slate-800/70 transition-all duration-300
                     border border-slate-700 hover:border-slate-600"
