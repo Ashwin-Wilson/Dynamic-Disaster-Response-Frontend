@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { ClipboardList, X } from "lucide-react";
 import ShelterManagementForm from "../../Components/ShelterUpdateForm";
 import axios from "axios";
 import {
@@ -38,7 +39,8 @@ function formatDateTime(dateTimeString) {
 
 const CareTakerDashboard = () => {
   const [viewShlterUpdateForm, setViewShlterUpdateForm] = useState(false);
-  const [shelterId, setShelterId] = useState(localStorage.getItem("shelterId"));
+  const [viewDailyReportForm, setViewDailyReportForm] = useState(false);
+  const [shelterId, setShelterId] = useState(null);
 
   const navigate = useNavigate();
   // const [shelterStats] = useState({
@@ -75,6 +77,7 @@ const CareTakerDashboard = () => {
     sanitation: "good",
     last_inspection: "2025-02-28T07:30:19.521Z",
     status: "active",
+    updatedAt: "2025-02-28T12:18:30.734Z",
   });
 
   const [dailyReports] = useState([
@@ -142,6 +145,10 @@ const CareTakerDashboard = () => {
       bgColor: "bg-yellow-500/20",
     },
   ];
+  useEffect(() => {
+    const shelterId = localStorage.getItem("shelterId");
+    setShelterId(shelterId);
+  }, []);
 
   useEffect(() => {
     if (shelterId) {
@@ -150,7 +157,10 @@ const CareTakerDashboard = () => {
           headers: { shelterId: shelterId },
         })
         .then((response) => {
-          setShelterDetails(response.data.shelter);
+          setShelterDetails({
+            ...response.data.shelter,
+            updatedAt: formatDateTime(response.data.shelter.updatedAt),
+          });
         })
         .catch((error) => {
           console.log(error);
@@ -242,7 +252,12 @@ const CareTakerDashboard = () => {
             <div className="bg-[#1e2538] rounded-lg p-6 shadow-lg">
               <h3 className="text-lg font-semibold mb-4">Quick Actions</h3>
               <div className="space-y-3">
-                <button className="w-full bg-purple-500/10 text-purple-500 py-2 rounded-lg font-semibold hover:bg-purple-500/20 transition-colors">
+                <button
+                  className="w-full bg-purple-500/10 text-purple-500 py-2 rounded-lg font-semibold hover:bg-purple-500/20 transition-colors"
+                  onClick={() => {
+                    setViewDailyReportForm(!viewDailyReportForm);
+                  }}
+                >
                   Submit Daily Report
                 </button>
                 <button
@@ -290,7 +305,7 @@ const CareTakerDashboard = () => {
                 <div className="p-4 border border-gray-700 rounded-lg">
                   <p className="text-gray-400">Last Inspection</p>
                   <p className="text-xl font-bold">
-                    {formatDateTime(shelterDetails.last_inspection)}
+                    {shelterDetails.updatedAt}
                   </p>
                 </div>
               </div>
@@ -300,37 +315,37 @@ const CareTakerDashboard = () => {
             <div className="bg-[#1e2538] rounded-lg p-6 shadow-lg">
               <h3 className="text-lg font-semibold mb-4">Daily Reports</h3>
               <div className="space-y-4">
-                {dailyReports.map((report) => (
-                  <div
-                    key={report.id}
-                    className="border border-gray-700 rounded-lg p-4 hover:border-purple-500/50"
-                  >
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <Clipboard className="w-4 h-4 text-purple-500" />
-                          <h4 className="font-semibold">{report.type}</h4>
+                {shelterDetails.reports &&
+                  shelterDetails.reports.map((report) => (
+                    <div
+                      key={report._id}
+                      className="border border-gray-700 rounded-lg p-4 hover:border-purple-500/50"
+                    >
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <Clipboard className="w-4 h-4 text-purple-500" />
+                            <h4 className="font-semibold">{report.title}</h4>
+                          </div>
+                          <div className="flex items-center gap-4 text-sm text-gray-400 mt-1">
+                            <span>{formatDateTime(report.createdAt)}</span>
+                          </div>
+                          <p className="text-sm text-gray-300 mt-2">
+                            {report.description}
+                          </p>
                         </div>
-                        <div className="flex items-center gap-4 text-sm text-gray-400 mt-1">
-                          <span>{report.date}</span>
-                          <span>{report.time}</span>
-                        </div>
-                        <p className="text-sm text-gray-300 mt-2">
-                          {report.notes}
-                        </p>
+                        <span
+                          className={`px-2 py-1 rounded text-xs ${
+                            report.status === "Completed"
+                              ? "bg-green-500/20 text-green-500"
+                              : "bg-yellow-500/20 text-yellow-500"
+                          }`}
+                        >
+                          {report.status}
+                        </span>
                       </div>
-                      <span
-                        className={`px-2 py-1 rounded text-xs ${
-                          report.status === "Completed"
-                            ? "bg-green-500/20 text-green-500"
-                            : "bg-yellow-500/20 text-yellow-500"
-                        }`}
-                      >
-                        {report.status}
-                      </span>
                     </div>
-                  </div>
-                ))}
+                  ))}
               </div>
             </div>
           </div>
@@ -341,6 +356,13 @@ const CareTakerDashboard = () => {
           onClose={() => setViewShlterUpdateForm(false)}
           shelterId={shelterId}
           isUpdate={shelterId ? true : false}
+          setShelterDetails={setShelterDetails}
+        />
+      )}
+      {viewDailyReportForm === true && (
+        <DailyReportForm
+          onClose={() => setViewDailyReportForm(false)}
+          shelterId={shelterId}
         />
       )}
     </div>
@@ -348,3 +370,127 @@ const CareTakerDashboard = () => {
 };
 
 export default CareTakerDashboard;
+
+const DailyReportForm = ({ onClose, shelterId }) => {
+  const [formData, setFormData] = useState({
+    title: "",
+    description: "",
+  });
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({
+      ...formData,
+      [name]: value,
+    });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+
+    try {
+      await axios
+        .post(`${BASE_URL}/caretaker/shelter/report`, {
+          shelterId,
+          updates: formData,
+        })
+        .then((response) => {
+          console.log("Report submitted successfully");
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+
+      onClose();
+    } catch (error) {
+      console.error("Error submitting report:", error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Format date for display
+  const formatDate = () => {
+    const now = new Date();
+    return now.toLocaleDateString("en-US", {
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+      <div className="bg-slate-900 rounded-lg w-full max-w-2xl mx-4 p-6">
+        {/* Header with close button */}
+        <div className="flex justify-between items-center mb-6">
+          <div className="flex items-center">
+            <ClipboardList className="text-purple-500 mr-2" size={24} />
+            <h1 className="text-2xl font-bold text-white">Daily Report Form</h1>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="text-gray-400 hover:text-white transition-colors"
+          >
+            <X size={24} />
+          </button>
+        </div>
+
+        {/* Date */}
+        <div className="mb-6">
+          <div className="text-gray-300">
+            Report Date: <span className="text-white">{formatDate()}</span>
+          </div>
+        </div>
+
+        {/* Form */}
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Basic report details */}
+          <div className="bg-slate-800/50 p-4 rounded-lg space-y-4">
+            <div>
+              <label className="block text-gray-200 mb-2">Report Title</label>
+              <input
+                type="text"
+                className="w-full bg-slate-800 rounded-lg px-4 py-2 text-white"
+                placeholder="E.g., Daily Update, Supply Shortage Alert"
+                name="title"
+                value={formData.title}
+                onChange={handleChange}
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block text-gray-200 mb-2">Description</label>
+              <textarea
+                className="w-full bg-slate-800 rounded-lg px-4 py-2 text-white h-32"
+                placeholder="Provide details about the current situation at the shelter..."
+                name="description"
+                value={formData.description}
+                onChange={handleChange}
+                required
+              />
+            </div>
+          </div>
+
+          {/* Submit button */}
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            className="w-full bg-gradient-to-r from-purple-500 to-purple-600 text-white font-medium py-3 px-4 
+                     rounded-lg hover:from-purple-600 hover:to-purple-700 focus:outline-none focus:ring-2 
+                     focus:ring-purple-500 focus:ring-offset-2 focus:ring-offset-[#0f172a] transition-all
+                     disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isSubmitting ? "Submitting Report..." : "Submit Daily Report"}
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+};

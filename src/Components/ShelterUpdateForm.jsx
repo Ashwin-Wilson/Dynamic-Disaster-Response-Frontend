@@ -34,7 +34,12 @@ const createCustomMarker = (color1, color2) => {
   return customMarker;
 };
 
-const ShelterManagementForm = ({ onClose, shelterId, isUpdate }) => {
+const ShelterManagementForm = ({
+  onClose,
+  shelterId,
+  isUpdate,
+  setShelterDetails,
+}) => {
   const [mapMarker, setMapMarker] = useState(null);
   const [olaMap, setOlaMap] = useState(null);
   const [rMarkerLoc, setRMarkerLoc] = useState({
@@ -300,8 +305,13 @@ const ShelterManagementForm = ({ onClose, shelterId, isUpdate }) => {
     try {
       if (isUpdate) {
         await axios
-          .post(`${BASE_URL}/caretaker/shelter/update`, { formData, shelterId })
+          .post(`${BASE_URL}/caretaker/shelter/update`, {
+            updates: formData,
+            shelterId,
+          })
           .then((response) => {
+            setShelterDetails(response.data.shelter);
+
             console.log("Shelter details updated successfully!");
           })
           .catch((error) => {
@@ -311,8 +321,8 @@ const ShelterManagementForm = ({ onClose, shelterId, isUpdate }) => {
         await axios
           .post(`${BASE_URL}/caretaker/shelter/create`, formData)
           .then((response) => {
-            console.log(response);
             localStorage.setItem("shelterId", response.data.shelterId);
+            console.log("Shelter created successfully");
           })
           .catch((error) => {
             console.log(error);
