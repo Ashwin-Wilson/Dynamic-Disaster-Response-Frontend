@@ -505,7 +505,7 @@ const MapView = ({ destinaitonLoc }) => {
           },
         });
 
-        //To add multiple families markers, marker clustering
+        //To add multiple shelters markers, marker clustering
         globalMap.addSource("shelters", {
           type: "geojson",
           data: {

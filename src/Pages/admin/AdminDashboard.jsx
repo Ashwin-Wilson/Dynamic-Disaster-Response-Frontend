@@ -329,6 +329,10 @@ const MapView = ({ disasterReport }) => {
       lat: 9.851076591262078,
     },
   ]);
+  const [shelterLoc, setShelterLoc] = useState({
+    lng: 76.94006268199648,
+    lat: 9.851076591262078,
+  });
 
   useEffect(() => {
     axios
@@ -364,6 +368,22 @@ const MapView = ({ disasterReport }) => {
             return {
               lng: item.location.coordinates[0],
               lat: item.location.coordinates[1],
+            };
+          }),
+        ]);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+
+    axios
+      .get(`${BASE_URL}/driver/get-all-shelters`)
+      .then((response) => {
+        setShelterLoc([
+          ...response.data.Shelters.map((item) => {
+            return {
+              lng: item.address.location.coordinates[0],
+              lat: item.address.location.coordinates[1],
             };
           }),
         ]);
@@ -551,43 +571,87 @@ const MapView = ({ disasterReport }) => {
         },
       });
 
-      //Adding connector lines between disaster and families
-      myMap.addSource("route", {
+      //To add multiple shelters markers, marker clustering
+      myMap.addSource("shelters", {
         type: "geojson",
         data: {
-          type: "Feature",
-          properties: {},
-          geometry: {
-            type: "LineString",
-            coordinates: [
-              // [76.94209290280338, 9.850611082222201],
-              // [77.02679450221746, 9.930319118569855],
-
-              ...disasterLoc.map((item) => {
-                return [item.lng, item.lat];
-              }),
-              ...familyLoc.map((item) => {
-                return [item.lng, item.lat];
-              }),
-            ],
-          },
+          type: "FeatureCollection",
+          features: shelterLoc.map((item) => {
+            return {
+              geometry: {
+                type: "Point",
+                coordinates: [item.lng, item.lat],
+              },
+            };
+          }),
         },
+        cluster: true,
+        clusterMaxZoom: 14,
+        clusterRadius: 50,
       });
 
+      //Color in wider view
       myMap.addLayer({
-        id: "route",
-        type: "line",
-        source: "route",
-        layout: { "line-join": "round", "line-cap": "round" },
+        id: "shelters-clusters",
+        type: "circle",
+        source: "shelters",
+        filter: ["has", "point_count"],
+
         paint: {
-          "line-color": "red",
-          "line-width": 4,
+          "circle-color": ["step", ["get", "point_count"], "green", 2, "green"],
+          "circle-radius": ["step", ["get", "point_count"], 20, 2, 30, 4, 40],
         },
       });
+
+      //Color in closer view
+      myMap.addLayer({
+        id: "shelters-unclustered-point",
+        type: "circle",
+        source: "shelters",
+        filter: ["!", ["has", "point_count"]],
+        paint: {
+          "circle-color": "green",
+          "circle-radius": 20,
+          "circle-stroke-width": 1,
+          "circle-stroke-color": "green",
+        },
+      });
+
+      //Adding connector lines between disaster and families
+      // myMap.addSource("route", {
+      //   type: "geojson",
+      //   data: {
+      //     type: "Feature",
+      //     properties: {},
+      //     geometry: {
+      //       type: "LineString",
+      //       coordinates: [
+      //         // [76.94209290280338, 9.850611082222201],
+      //         // [77.02679450221746, 9.930319118569855],
+
+      //         ...disasterLoc.map((item) => {
+      //           return [item.lng, item.lat];
+      //         }),
+      //         ...familyLoc.map((item) => {
+      //           return [item.lng, item.lat];
+      //         }),
+      //       ],
+      //     },
+      //   },
+      // });
+
+      // myMap.addLayer({
+      //   id: "route",
+      //   type: "line",
+      //   source: "route",
+      //   layout: { "line-join": "round", "line-cap": "round" },
+      //   paint: {
+      //     "line-color": "red",
+      //     "line-width": 4,
+      //   },
+      // });
     });
-    console.log(familyLoc);
-    console.log(driverLoc);
-  }, [disasterLoc, familyLoc, driverLoc]);
+  }, [disasterLoc, familyLoc, driverLoc, shelterLoc]);
   return <div id="map" style={{ height: "40rem", width: "70rem" }}></div>;
 };
 
