@@ -59,7 +59,7 @@ const WelcomePage = () => {
         <div
           onClick={() => {
             console.log("Volunteer login clicked");
-            navigate("/volunteer/dashboard");
+            navigate("/volunteer/signup");
           }}
           className="bg-slate-800/50 rounded-lg p-6 cursor-pointer
                     hover:bg-slate-800/70 transition-all duration-300

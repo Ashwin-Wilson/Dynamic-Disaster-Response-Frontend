@@ -11,10 +11,12 @@ import FamilyLogin from "./Pages/family/FamilyLogin";
 import DriverSignupPage from "./Pages/driver/DriverSignup";
 import DriverLoginPage from "./Pages/driver/DriverLoginPage";
 import DriverDashboard from "./Pages/driver/DriverDashboard";
-import VolunteerDashboard from "./Pages/volunteer/VolunteerDashboard";
 import CaretakerSignUp from "./Pages/caretaker/CaretakerSignup";
 import CareTakerDashboard from "./Pages/caretaker/CaretakerDashboard";
 import CaretakerLogin from "./Pages/caretaker/CaretakerLogin";
+import VolunteerSignUp from "./Pages/volunteer/VolunteerSignUp";
+import VolunteerDashboard from "./Pages/volunteer/VolunteerDashboard";
+import VolunteerLogin from "./Pages/volunteer/VolunteerLogin";
 
 function App() {
   return (
@@ -31,6 +33,8 @@ function App() {
           <Route path="/driver/signup" element={<DriverSignupPage />} />
           <Route path="/driver/login" element={<DriverLoginPage />} />
           <Route path="/driver/dashboard" element={<DriverDashboard />} />
+          <Route path="/volunteer/signup" element={<VolunteerSignUp />} />
+          <Route path="/volunteer/login" element={<VolunteerLogin />} />
           <Route path="/volunteer/dashboard" element={<VolunteerDashboard />} />
           <Route path="/caretaker/signup" element={<CaretakerSignUp />} />
           <Route path="/caretaker/login" element={<CaretakerLogin />} />

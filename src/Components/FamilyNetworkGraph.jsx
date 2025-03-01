@@ -203,13 +203,13 @@ const FamilyNetworkGraph = ({ disasterReport, families }) => {
   }, [disasterReport, families, scale, offset, isDragging, dragStart]);
 
   return (
-    <div className="h-32 bg-slate-900 rounded-lg w-full">
+    <div className="h-100 bg-slate-900 rounded-lg w-full">
       <div className="mt-2 text-slate-400 text-sm">
         Scroll to zoom, drag to pan
       </div>
       <canvas
         ref={canvasRef}
-        className="w-full  h-50 rounded-lg cursor-move"
+        className="w-full  h-100 md:h-120 rounded-lg cursor-move"
         style={{ maxWidth: "800px" }}
       />
     </div>

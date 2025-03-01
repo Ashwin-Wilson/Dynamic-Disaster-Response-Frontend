@@ -69,6 +69,7 @@ const AdminDashboard = () => {
   const [disasterCount, setDisasterCount] = useState(3);
   const [shelterCount, setShelterCount] = useState(3);
   const [report, setReport] = useState();
+  const [volunteerCount, setVolunteerCount] = useState(3);
 
   useEffect(() => {
     const getAllDisasterReports = async () => {
@@ -113,6 +114,9 @@ const AdminDashboard = () => {
       axios.get(`${BASE_URL}/driver/get-all-shelters`).then((response) => {
         setShelterCount(response.data.Shelters.length);
       });
+      axios.get(`${BASE_URL}/volunteer/get-all-volunteers`).then((response) => {
+        setVolunteerCount(response.data.volunteers.length);
+      });
     };
 
     if (disasterReport) {
@@ -145,17 +149,10 @@ const AdminDashboard = () => {
     },
     {
       title: "Volunteers",
-      value: "478",
+      value: `${volunteerCount}`,
       icon: User,
       iconBg: "bg-purple-500/20",
       iconColor: "text-purple-500",
-    },
-    {
-      title: "Ambulances",
-      value: "57",
-      icon: Ambulance,
-      iconBg: "bg-red-500/20",
-      iconColor: "text-red-500",
     },
     {
       title: "Pickup",
@@ -308,7 +305,7 @@ const AdminDashboard = () => {
           </div>
 
           {view === 0 && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-slate-900">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-slate-900 md:h-150">
               <div className="p-2 sm:p-4 max-w-full max-h-[300px] sm:max-h-full">
                 <Pie data={pieData} />
               </div>

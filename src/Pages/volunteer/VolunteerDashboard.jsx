@@ -24,35 +24,12 @@ const MAP_API_KEY = import.meta.env.VITE_MAPS_API_KEY;
 const VolunteerDashboard = () => {
   const navigate = useNavigate();
   const [isActive, setIsActive] = useState(true);
-  // const [shelters] = useState([
-  //   {
-  //     id: 1,
-  //     name: "Central Community Adoor",
-  //     capacity: "234/500",
-  //     volunteers: 6,
-  //     status: "Available",
-  //   },
-  //   {
-  //     id: 2,
-  //     name: "East District School",
-  //     capacity: "100/100",
-  //     volunteers: 6,
-  //     status: "Unavailable",
-  //   },
-  //   {
-  //     id: 3,
-  //     name: "Holycross Hospital",
-  //     capacity: "259/350",
-  //     volunteers: 12,
-  //     status: "Available",
-  //   },
-  // ]);
-
   const [disaterReport, setDisasterReport] = useState(null);
   const [familyCount, setFamilyCount] = useState(3);
   const [driverCount, setDriverCount] = useState(3);
   const [shelters, setShelters] = useState(null);
   const [shelterCount, setShelterCount] = useState(3);
+  const [volunteerCount, setVolunteerCount] = useState(3);
 
   const [alerts] = useState([
     {
@@ -102,7 +79,7 @@ const VolunteerDashboard = () => {
     },
     {
       title: "Volunteers",
-      count: "478",
+      count: `${volunteerCount}`,
       icon: Users,
       color: "text-purple-500",
       bgColor: "bg-purple-500/20",
@@ -114,13 +91,7 @@ const VolunteerDashboard = () => {
       color: "text-green-500",
       bgColor: "bg-green-500/20",
     },
-    {
-      title: "Ambulances",
-      count: "57",
-      icon: Ambulance,
-      color: "text-red-500",
-      bgColor: "bg-red-500/20",
-    },
+
     {
       title: "Drivers",
       count: `${driverCount}`,
@@ -160,7 +131,6 @@ const VolunteerDashboard = () => {
       });
 
     axios.get(`${BASE_URL}/admin/get-all-families`).then((response) => {
-      // console.log(response.data.families);
       setFamilyCount(response.data.families.length);
     });
 
@@ -168,9 +138,11 @@ const VolunteerDashboard = () => {
       setDriverCount(response.data.drivers.length);
     });
     axios.get(`${BASE_URL}/driver/get-all-shelters`).then((response) => {
-      console.log(response.data.Shelters);
       setShelters(response.data.Shelters);
       setShelterCount(response.data.Shelters.length);
+    });
+    axios.get(`${BASE_URL}/volunteer/get-all-volunteers`).then((response) => {
+      setVolunteerCount(response.data.volunteers.length);
     });
   }, []);
 
@@ -228,8 +200,12 @@ const VolunteerDashboard = () => {
                   <Users className="w-8 h-8 text-[#1a1f2e]" />
                 </div>
                 <div>
-                  <h2 className="text-xl font-bold">Sarath Sashi</h2>
-                  <p className="text-gray-400">ID: VOL-2024-001</p>
+                  <h2 className="text-xl font-bold">
+                    {localStorage.getItem("volunteerName") ?? " Sarath Sashi"}
+                  </h2>
+                  <p className="text-gray-400">
+                    ID: {localStorage.getItem("volunteerId") ?? "VOL-2024-001"}
+                  </p>
                   <p className="text-gray-400">Area: North idukki</p>
                   <button
                     onClick={() => setIsActive(!isActive)}
