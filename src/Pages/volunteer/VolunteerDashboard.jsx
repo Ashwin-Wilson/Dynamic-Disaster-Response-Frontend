@@ -289,7 +289,7 @@ const VolunteerDashboard = () => {
           </div>
 
           {/* Middle Column - Map */}
-          <div className="lg:col-span-2 bg-[#1e2538] rounded-lg shadow-lg p-6">
+          <div className="lg:col-span-2 bg-[#1e2538] rounded-lg shadow-lg p-3">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-semibold">Area Map</h3>
               <button className="flex items-center gap-2 bg-blue-500/10 text-blue-500 px-4 py-2 rounded-lg hover:bg-blue-500/20 transition-colors">
@@ -659,7 +659,12 @@ const MapView = () => {
       });
     });
   }, [disasterLocation, familyLoc]);
-  return <div id="map" style={{ height: "40rem", width: "50rem" }}></div>;
+  return (
+    <div
+      id="map"
+      className="h-150 sm:h-96 md:h-[30rem] lg:h-[40rem] w-full"
+    ></div>
+  );
 };
 
 export default VolunteerDashboard;

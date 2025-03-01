@@ -83,16 +83,16 @@ const DriverDashboard = () => {
     <div className="min-h-screen bg-[#1a1f2e] text-gray-100">
       {/* Header */}
       <header className="bg-[#1e2538] p-4 shadow-lg">
-        <div className="container mx-auto flex justify-between items-center">
-          <div className="flex items-center gap-3">
+        <div className="container mx-auto flex flex-col sm:flex-row justify-between items-center">
+          <div className="flex items-center gap-3 mb-4 sm:mb-0">
             <Car className="text-yellow-500 w-8 h-8" />
-            <h1 className="text-2xl font-bold">Driver Dashboard</h1>
+            <h1 className="text-xl sm:text-2xl font-bold">Driver Dashboard</h1>
           </div>
           <div className="flex items-center gap-4">
-            <Bell className="w-6 h-6 text-gray-400 hover:text-yellow-500 cursor-pointer" />
-            <Settings className="w-6 h-6 text-gray-400 hover:text-yellow-500 cursor-pointer" />
+            <Bell className="w-5 h-5 sm:w-6 sm:h-6 text-gray-400 hover:text-yellow-500 cursor-pointer" />
+            <Settings className="w-5 h-5 sm:w-6 sm:h-6 text-gray-400 hover:text-yellow-500 cursor-pointer" />
             <LogOut
-              className="w-6 h-6 text-gray-400 hover:text-yellow-500 cursor-pointer"
+              className="w-5 h-5 sm:w-6 sm:h-6 text-gray-400 hover:text-yellow-500 cursor-pointer"
               onClick={() => {
                 navigate("/");
               }}
@@ -101,102 +101,108 @@ const DriverDashboard = () => {
         </div>
       </header>
 
-      <main className="container mx-auto p-4 grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left Column - Driver Info & Vehicle Status */}
-        <div className="lg:col-span-1 space-y-6">
-          <div className="bg-[#1e2538] rounded-lg p-6 shadow-lg">
-            <div className="flex items-center gap-4 mb-6">
-              <div className="w-16 h-16 bg-yellow-500 rounded-full flex items-center justify-center">
-                <Car className="w-8 h-8 text-[#1a1f2e]" />
+      <main className="container mx-auto px-2 sm:px-4 py-4 grid grid-cols-1 gap-6">
+        {/* Top section with driver info and map */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Left Column - Driver Info & Vehicle Status */}
+          <div className="lg:col-span-1 space-y-6">
+            <div className="bg-[#1e2538] rounded-lg p-4 sm:p-6 shadow-lg">
+              <div className="flex items-center gap-4 mb-6">
+                <div className="w-12 h-12 sm:w-16 sm:h-16 bg-yellow-500 rounded-full flex items-center justify-center">
+                  <Car className="w-6 h-6 sm:w-8 sm:h-8 text-[#1a1f2e]" />
+                </div>
+                <div>
+                  <h2 className="text-lg sm:text-xl font-bold">
+                    {localStorage.getItem("driverName") ?? "Thomas"}
+                  </h2>
+                  <p className="text-gray-400">Vehicle: Toyota Hiace</p>
+                  <p className="text-gray-400">
+                    No:
+                    {localStorage.getItem("driverVehicleNum") ?? "KL-26-24001"}
+                  </p>
+                  <div
+                    className={`mt-2 inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm ${
+                      isOnline
+                        ? "bg-green-500/20 text-green-500"
+                        : "bg-gray-500/20 text-gray-400"
+                    }`}
+                  >
+                    <span
+                      className={`w-2 h-2 rounded-full ${
+                        isOnline ? "bg-green-500" : "bg-gray-400"
+                      }`}
+                    ></span>
+                    {isOnline ? "Online" : "Offline"}
+                  </div>
+                </div>
               </div>
-              <div>
-                <h2 className="text-xl font-bold">
-                  {localStorage.getItem("driverName") ?? "Thomas"}
-                </h2>
-                <p className="text-gray-400">Vehicle: Toyota Hiace</p>
-                <p className="text-gray-400">
-                  No:{localStorage.getItem("driverVehicleNum") ?? "KL-26-24001"}
-                </p>
-                <div
-                  className={`mt-2 inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm ${
+              <div className="space-y-4">
+                <button
+                  onClick={toggleShift}
+                  className={`w-full py-2 rounded-lg font-semibold transition-colors ${
                     isOnline
-                      ? "bg-green-500/20 text-green-500"
-                      : "bg-gray-500/20 text-gray-400"
+                      ? "bg-red-500/10 text-red-500 hover:bg-red-500/20"
+                      : "bg-yellow-500 text-[#1a1f2e] hover:bg-yellow-400"
                   }`}
                 >
-                  <span
-                    className={`w-2 h-2 rounded-full ${
-                      isOnline ? "bg-green-500" : "bg-gray-400"
-                    }`}
-                  ></span>
-                  {isOnline ? "Online" : "Offline"}
+                  {isOnline ? "Stop Shift" : "Start Shift"}
+                </button>
+                <button className="w-full bg-red-500/10 text-red-500 py-2 rounded-lg font-semibold hover:bg-red-500/20 transition-colors">
+                  Report Vehicle Issue
+                </button>
+              </div>
+            </div>
+
+            {/* Vehicle Status */}
+            <div className="bg-[#1e2538] rounded-lg p-4 sm:p-6 shadow-lg">
+              <h3 className="text-lg font-semibold mb-4">Vehicle Status</h3>
+              <div className="space-y-4">
+                <div className="flex justify-between items-center">
+                  <span>Fuel Level</span>
+                  <div className="w-24 sm:w-32 h-2 bg-gray-700 rounded-full">
+                    <div className="w-3/4 h-full bg-green-500 rounded-full"></div>
+                  </div>
+                </div>
+
+                <div className="flex justify-between items-center">
+                  <span>Tire condition</span>
+                  <div className="w-24 sm:w-32 h-2 bg-gray-700 rounded-full">
+                    <div className="w-4/5 h-full bg-green-500 rounded-full"></div>
+                  </div>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span>Maintenance</span>
+                  <span className="text-green-500">Good Condition</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span>Last Inspection</span>
+                  <span className="text-gray-400">2 days ago</span>
                 </div>
               </div>
             </div>
-            <div className="space-y-4">
-              <button
-                onClick={toggleShift}
-                className={`w-full py-2 rounded-lg font-semibold transition-colors ${
-                  isOnline
-                    ? "bg-red-500/10 text-red-500 hover:bg-red-500/20"
-                    : "bg-yellow-500 text-[#1a1f2e] hover:bg-yellow-400"
-                }`}
-              >
-                {isOnline ? "Stop Shift" : "Start Shift"}
+          </div>
+
+          {/* Middle Column - Map */}
+          <div className="lg:col-span-2 bg-[#1e2538] rounded-lg shadow-lg p-4 sm:p-6">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-3">
+              <h3 className="text-lg font-semibold">Route Map</h3>
+              <button className="flex items-center gap-2 bg-blue-500/10 text-blue-500 px-4 py-2 rounded-lg hover:bg-blue-500/20 transition-colors">
+                <Navigation2 className="w-4 h-4" />
+                Navigate
               </button>
-              <button className="w-full bg-red-500/10 text-red-500 py-2 rounded-lg font-semibold hover:bg-red-500/20 transition-colors">
-                Report Vehicle Issue
-              </button>
+            </div>
+
+            <div className="w-full  overflow-x-auto">
+              <MapView destinaitonLoc={destinaitonLoc} />
             </div>
           </div>
-
-          {/* Vehicle Status */}
-          <div className="bg-[#1e2538] rounded-lg p-6 shadow-lg">
-            <h3 className="text-lg font-semibold mb-4">Vehicle Status</h3>
-            <div className="space-y-4">
-              <div className="flex justify-between items-center">
-                <span>Fuel Level</span>
-                <div className="w-32 h-2 bg-gray-700 rounded-full">
-                  <div className="w-3/4 h-full bg-green-500 rounded-full"></div>
-                </div>
-              </div>
-
-              <div className="flex justify-between items-center">
-                <span>Tire condition</span>
-                <div className="w-32 h-2 bg-gray-700 rounded-full">
-                  <div className="w-4/5 h-full bg-green-500 rounded-full"></div>
-                </div>
-              </div>
-              <div className="flex justify-between items-center">
-                <span>Maintenance</span>
-                <span className="text-green-500">Good Condition</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span>Last Inspection</span>
-                <span className="text-gray-400">2 days ago</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Middle Column - Map */}
-        <div className="lg:col-span-2 bg-[#1e2538] rounded-lg shadow-lg p-6">
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="text-lg font-semibold">Route Map</h3>
-            <button className="flex items-center gap-2 bg-blue-500/10 text-blue-500 px-4 py-2 rounded-lg hover:bg-blue-500/20 transition-colors">
-              <Navigation2 className="w-4 h-4" />
-              Navigate
-            </button>
-          </div>
-
-          <MapView destinaitonLoc={destinaitonLoc} />
         </div>
 
         {/* Pickup Requests */}
         <div className="lg:col-span-3">
-          <div className="bg-[#1e2538] rounded-lg p-6 shadow-lg">
+          <div className="bg-[#1e2538] rounded-lg p-4 sm:p-6 shadow-lg">
             <h3 className="text-lg font-semibold mb-4">Pickup Requests</h3>
-            <div className="grid grid-cols-2 ">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <FamilyListView setDestinationLoc={setDestinationLoc} />
               <ShelterListView setDestinationLoc={setDestinationLoc} />
             </div>
@@ -583,6 +589,34 @@ const MapView = ({ destinaitonLoc }) => {
             "line-width": 4,
           },
         });
+
+        //To mark the bloked route
+        // globalMap.addSource("block-route", {
+        //   type: "geojson",
+        //   data: {
+        //     type: "Feature",
+        //     properties: {},
+        //     geometry: {
+        //       type: "LineString",
+        //       coordinates: [
+        //         ...routeCoords.map((item) => {
+        //           return [item.lng, item.lat];
+        //         }),
+        //       ],
+        //     },
+        //   },
+        // });
+
+        // globalMap.addLayer({
+        //   id: "block-route",
+        //   type: "line",
+        //   source: "block-route",
+        //   layout: { "line-join": "round", "line-cap": "round" },
+        //   paint: {
+        //     "line-color": "red",
+        //     "line-width": 10,
+        //   },
+        // });
       });
 
       globalMap.on("moveend", () => {
@@ -637,7 +671,13 @@ const MapView = ({ destinaitonLoc }) => {
     routeCoords,
   ]);
 
-  return <div id="map" style={{ height: "40rem", width: "50rem" }}></div>;
+  // Make map container responsive
+  return (
+    <div
+      id="map"
+      className="h-150 sm:h-100 md:h-[30rem] lg:h-[40rem] w-full"
+    ></div>
+  );
 };
 
 export default DriverDashboard;
@@ -910,44 +950,55 @@ const FamilyListView = ({ setDestinationLoc }) => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-900 p-6">
-      <h2 className="text-4xl font-bold text-white mb-6">
-        Families List (Evacuation Priority - Topological Order)
+    <div className="p-2 sm:p-6">
+      <h2 className="text-2xl sm:text-4xl font-bold text-white mb-4 sm:mb-6">
+        Families List (Evacuation Priority)
       </h2>
-      <p>Click the family to get the direction towards them: </p>
-      <div className="grid gap-4">
+      <p className="text-sm sm:text-base mb-4">
+        Click the family to get directions:
+      </p>
+      <div className="grid gap-4 overflow-y-auto max-h-[60vh] pr-1">
         {sortedFamilies.map((family, index) => (
           <div
             key={family._id}
-            className="bg-slate-800/50 p-6 rounded-lg border border-slate-700 hover:border-slate-600 hover:bg-slate-800/70 transition-all duration-300 relative"
+            className="bg-slate-800/50 p-3 sm:p-6 rounded-lg border border-slate-700 hover:border-slate-600 hover:bg-slate-800/70 transition-all duration-300 relative cursor-pointer"
             onClick={() => {
-              // console.log(family.address.location);
               setDestinationLoc({
                 lng: family.address.location.coordinates[0],
                 lat: family.address.location.coordinates[1],
               });
             }}
           >
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-2 sm:gap-4">
               <div>
-                <h3 className="font-semibold text-gray-400">Family Name</h3>
-                <p className="text-white">{family.family_name}</p>
+                <h3 className="font-semibold text-gray-400 text-sm">
+                  Family Name
+                </h3>
+                <p className="text-white text-sm sm:text-base truncate">
+                  {family.family_name}
+                </p>
               </div>
               <div>
-                <h3 className="font-semibold text-gray-400">Total Members</h3>
-                <p className="text-white">{family.total_members}</p>
+                <h3 className="font-semibold text-gray-400 text-sm">
+                  Total Members
+                </h3>
+                <p className="text-white text-sm sm:text-base">
+                  {family.total_members}
+                </p>
               </div>
               <div>
-                <h3 className="font-semibold text-gray-400">Location</h3>
-                <p className="text-white">
+                <h3 className="font-semibold text-gray-400 text-sm">
+                  Location
+                </h3>
+                <p className="text-white text-sm sm:text-base truncate">
                   {family.address.city}, {family.address.state}
                 </p>
               </div>
               <div>
-                <h3 className="font-semibold text-gray-400">
-                  Distance to Disaster
+                <h3 className="font-semibold text-gray-400 text-sm">
+                  Distance
                 </h3>
-                <p className="text-white">
+                <p className="text-white text-sm sm:text-base">
                   {disasterLoc && family.address.location.coordinates
                     ? `${(
                         calculateDistance(
@@ -959,39 +1010,39 @@ const FamilyListView = ({ setDestinationLoc }) => {
                 </p>
               </div>
               <div>
-                <h3 className="font-semibold text-gray-400">
-                  Vulnerability Score
+                <h3 className="font-semibold text-gray-400 text-sm">
+                  Vulnerability
                 </h3>
-                <p className="font-bold text-red-500">
+                <p className="font-bold text-red-500 text-sm sm:text-base">
                   {family.vulnerabilityScore}
                 </p>
               </div>
             </div>
 
-            <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="mt-2 sm:mt-4 grid grid-cols-1 md:grid-cols-3 gap-2 sm:gap-4">
               <div>
-                <h3 className="font-semibold text-gray-400">
+                <h3 className="font-semibold text-gray-400 text-sm">
                   Vulnerable Members
                 </h3>
-                <p className="text-white">
+                <p className="text-white text-sm sm:text-base">
                   {family.family_members.filter((m) => m.is_vulnerable).length}
                 </p>
               </div>
 
               <div>
-                <h3 className="font-semibold text-gray-400">
-                  Disaster Proximity Score
+                <h3 className="font-semibold text-gray-400 text-sm">
+                  Proximity Score
                 </h3>
-                <p className="text-orange-500 font-semibold">
+                <p className="text-orange-500 font-semibold text-sm sm:text-base">
                   {family.disasterProximityScore.toFixed(1)}
                 </p>
               </div>
 
               <div>
-                <h3 className="font-semibold text-gray-400">
-                  Dependency Status
+                <h3 className="font-semibold text-gray-400 text-sm">
+                  Dependency
                 </h3>
-                <p className="text-blue-500 font-semibold">
+                <p className="text-blue-500 font-semibold text-sm sm:text-base truncate">
                   {isVulnerableFamily(family)
                     ? `Depends on: ${family.dependsOn || "None"}`
                     : `Supporting: ${
@@ -1001,31 +1052,31 @@ const FamilyListView = ({ setDestinationLoc }) => {
               </div>
             </div>
 
-            <div className="mt-2 flex items-center">
+            <div className="mt-2 flex flex-wrap items-center gap-2">
               {family.medical_requirements.dependent_on_equipment && (
-                <div className="text-red-500 font-semibold mr-4">
+                <div className="text-red-500 font-semibold text-xs sm:text-sm">
                   Requires Medical Equipment
                 </div>
               )}
 
               {family.medical_requirements
                 .immediate_medical_assistance_needed && (
-                <div className="text-red-500 font-semibold">
-                  Needs Immediate Medical Assistance
+                <div className="text-red-500 font-semibold text-xs sm:text-sm">
+                  Needs Medical Assistance
                 </div>
               )}
             </div>
 
             {/* Priority ranking */}
-            <div className="absolute bottom-4 right-2 bg-blue-600 text-white font-bold rounded-full h-8 w-8 flex items-center justify-center">
+            <div className="absolute bottom-2 right-2 bg-blue-600 text-white font-bold rounded-full h-6 w-6 sm:h-8 sm:w-8 flex items-center justify-center text-xs sm:text-base">
               {index + 1}
             </div>
 
             {/* Family type indicator */}
             <div
-              className={`absolute bottom-4 right-12 ${
+              className={`absolute bottom-2 right-10 sm:right-12 ${
                 isVulnerableFamily(family) ? "bg-red-600" : "bg-green-600"
-              } text-white font-bold rounded-md px-2 py-1 text-sm`}
+              } text-white font-bold rounded-md px-1 sm:px-2 py-0.5 sm:py-1 text-xs sm:text-sm`}
             >
               {isVulnerableFamily(family) ? "Vulnerable" : "Support"}
             </div>
@@ -1047,67 +1098,80 @@ const ShelterListView = ({ setDestinationLoc }) => {
       .catch((error) => {
         console.log(error);
       });
-  });
+  }, []);
 
   return (
-    <div className="min-h-screen bg-slate-900 p-6">
-      <h2 className="text-4xl font-bold text-white mb-6">Shelters List View</h2>
-      {shelters &&
-        shelters.map((shelter, index) => (
-          <div
-            key={shelter._id}
-            className="bg-slate-800/50 p-6 rounded-lg border border-slate-700 hover:border-slate-600 hover:bg-slate-800/70 transition-all duration-300 relative"
-            onClick={() => {
-              // console.log(family.address.location);
-              setDestinationLoc({
-                lng: shelter.address.location.coordinates[0],
-                lat: shelter.address.location.coordinates[1],
-              });
-            }}
-          >
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div>
-                <h3 className="font-semibold text-gray-400">Shelter Name</h3>
-                <p className="text-white">{shelter.shelter_name}</p>
+    <div className="p-2 sm:p-6">
+      <h2 className="text-2xl sm:text-4xl font-bold text-white mb-4 sm:mb-6">
+        Shelters List
+      </h2>
+      <div className="overflow-y-auto max-h-[60vh] pr-1">
+        {shelters &&
+          shelters.map((shelter, index) => (
+            <div
+              key={shelter._id}
+              className="bg-slate-800/50 p-3 sm:p-6 rounded-lg border border-slate-700 hover:border-slate-600 hover:bg-slate-800/70 transition-all duration-300 relative mb-4 cursor-pointer"
+              onClick={() => {
+                setDestinationLoc({
+                  lng: shelter.address.location.coordinates[0],
+                  lat: shelter.address.location.coordinates[1],
+                });
+              }}
+            >
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2 sm:gap-4">
+                <div>
+                  <h3 className="font-semibold text-gray-400 text-sm">
+                    Shelter Name
+                  </h3>
+                  <p className="text-white text-sm sm:text-base truncate">
+                    {shelter.shelter_name}
+                  </p>
+                </div>
+
+                <div>
+                  <h3 className="font-semibold text-gray-400 text-sm">
+                    Location
+                  </h3>
+                  <p className="text-white text-sm sm:text-base truncate">
+                    {shelter.address.city}, {shelter.address.state}
+                  </p>
+                </div>
+
+                <div>
+                  <h3 className="font-semibold text-gray-400 text-sm">
+                    Occupancy
+                  </h3>
+                  <p className="text-white text-sm sm:text-base">
+                    {shelter.capacity.current_occupancy}/
+                    {shelter.capacity.max_capacity}
+                  </p>
+                </div>
+
+                <div>
+                  <h3 className="font-semibold text-gray-400 text-sm">
+                    Supply Status
+                  </h3>
+                  <div className="grid grid-cols-3 gap-1 text-white text-xs sm:text-sm">
+                    <p>Food: {shelter.supply_status.food}</p>
+                    <p>Water: {shelter.supply_status.water}</p>
+                    <p>Medicine: {shelter.supply_status.medicine}</p>
+                  </div>
+                </div>
               </div>
 
-              <div>
-                <h3 className="font-semibold text-gray-400">Location</h3>
-                <p className="text-white">
-                  {shelter.address.city}, {shelter.address.state}
-                </p>
-              </div>
-
-              <div>
-                <h3 className="font-semibold text-gray-400">Occupancy</h3>
-                <p className="text-white">
-                  {shelter.capacity.current_occupancy}/
-                  {shelter.capacity.max_capacity}
-                </p>
-              </div>
-
-              <div>
-                <h3 className="font-semibold text-gray-400">Supply Status</h3>
-
-                <p className="text-white">Food:{shelter.supply_status.food}</p>
-
-                <p className="text-white">
-                  Water: {shelter.supply_status.water}
-                </p>
-                <p className="text-white">
-                  Medicine: {shelter.supply_status.medicine}
-                </p>
+              <div className="mt-2 sm:mt-4">
+                <div>
+                  <h3 className="font-semibold text-gray-400 text-sm">
+                    Sanitation
+                  </h3>
+                  <p className="text-white text-sm sm:text-base">
+                    {shelter.sanitation}
+                  </p>
+                </div>
               </div>
             </div>
-
-            <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div>
-                <h3 className="font-semibold text-gray-400">Sanitaiton</h3>
-                <p className="text-white">{shelter.sanitation}</p>
-              </div>
-            </div>
-          </div>
-        ))}
+          ))}
+      </div>
     </div>
   );
 };
