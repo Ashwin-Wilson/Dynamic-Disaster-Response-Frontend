@@ -24,29 +24,35 @@ const MAP_API_KEY = import.meta.env.VITE_MAPS_API_KEY;
 const VolunteerDashboard = () => {
   const navigate = useNavigate();
   const [isActive, setIsActive] = useState(true);
-  const [shelters] = useState([
-    {
-      id: 1,
-      name: "Central Community Adoor",
-      capacity: "234/500",
-      volunteers: 6,
-      status: "Available",
-    },
-    {
-      id: 2,
-      name: "East District School",
-      capacity: "100/100",
-      volunteers: 6,
-      status: "Unavailable",
-    },
-    {
-      id: 3,
-      name: "Holycross Hospital",
-      capacity: "259/350",
-      volunteers: 12,
-      status: "Available",
-    },
-  ]);
+  // const [shelters] = useState([
+  //   {
+  //     id: 1,
+  //     name: "Central Community Adoor",
+  //     capacity: "234/500",
+  //     volunteers: 6,
+  //     status: "Available",
+  //   },
+  //   {
+  //     id: 2,
+  //     name: "East District School",
+  //     capacity: "100/100",
+  //     volunteers: 6,
+  //     status: "Unavailable",
+  //   },
+  //   {
+  //     id: 3,
+  //     name: "Holycross Hospital",
+  //     capacity: "259/350",
+  //     volunteers: 12,
+  //     status: "Available",
+  //   },
+  // ]);
+
+  const [disaterReport, setDisasterReport] = useState(null);
+  const [familyCount, setFamilyCount] = useState(3);
+  const [driverCount, setDriverCount] = useState(3);
+  const [shelters, setShelters] = useState(null);
+  const [shelterCount, setShelterCount] = useState(3);
 
   const [alerts] = useState([
     {
@@ -89,7 +95,7 @@ const VolunteerDashboard = () => {
   const stats = [
     {
       title: "Total Evacuee",
-      count: "932",
+      count: `${familyCount}`,
       icon: Users,
       color: "text-blue-500",
       bgColor: "bg-blue-500/20",
@@ -103,7 +109,7 @@ const VolunteerDashboard = () => {
     },
     {
       title: "Shelters",
-      count: "57",
+      count: `${shelterCount}`,
       icon: Building2,
       color: "text-green-500",
       bgColor: "bg-green-500/20",
@@ -117,12 +123,56 @@ const VolunteerDashboard = () => {
     },
     {
       title: "Drivers",
-      count: "34",
+      count: `${driverCount}`,
       icon: Truck,
       color: "text-yellow-500",
       bgColor: "bg-yellow-500/20",
     },
   ];
+
+  function formatDateTime(dateTimeString) {
+    const date = new Date(dateTimeString);
+
+    // Format date: Month Day, Year
+    const formattedDate = date.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+
+    // Format time: Hours:Minutes AM/PM
+    const formattedTime = date.toLocaleTimeString("en-US", {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+
+    return `${formattedDate} at ${formattedTime}`;
+  }
+
+  useEffect(() => {
+    axios
+      .get(`${BASE_URL}/admin/get-all-disaster-reports`)
+      .then((response) => {
+        setDisasterReport(response.data.disasterReports);
+      })
+      .catch((error) => {
+        console.error("Error fetching data:", error);
+      });
+
+    axios.get(`${BASE_URL}/admin/get-all-families`).then((response) => {
+      // console.log(response.data.families);
+      setFamilyCount(response.data.families.length);
+    });
+
+    axios.get(`${BASE_URL}/admin/get-all-drivers`).then((response) => {
+      setDriverCount(response.data.drivers.length);
+    });
+    axios.get(`${BASE_URL}/driver/get-all-shelters`).then((response) => {
+      console.log(response.data.Shelters);
+      setShelters(response.data.Shelters);
+      setShelterCount(response.data.Shelters.length);
+    });
+  }, []);
 
   return (
     <div className="min-h-screen bg-[#1a1f2e] text-gray-100">
@@ -199,9 +249,6 @@ const VolunteerDashboard = () => {
                 </div>
               </div>
               <div className="space-y-4">
-                <button className="w-full bg-red-500/10 text-red-500 py-2 rounded-lg font-semibold hover:bg-red-500/20 transition-colors">
-                  Report Disaster
-                </button>
                 <button className="w-full bg-yellow-500/10 text-yellow-500 py-2 rounded-lg font-semibold hover:bg-yellow-500/20 transition-colors">
                   Report Route Blockage
                 </button>
@@ -212,33 +259,31 @@ const VolunteerDashboard = () => {
             <div className="bg-[#1e2538] rounded-lg p-6 shadow-lg">
               <h3 className="text-lg font-semibold mb-4">Active Alerts</h3>
               <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-transparent">
-                {alerts.map((alert) => (
-                  <div
-                    key={alert.id}
-                    className="border border-gray-700 rounded-lg p-4 hover:border-red-500/50"
-                  >
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <AlertTriangle className="w-4 h-4 text-red-500" />
-                          <h4 className="font-semibold text-red-500">
-                            {alert.type}
-                          </h4>
+                {disaterReport &&
+                  disaterReport.map((item) => (
+                    <div
+                      key={item._id}
+                      className="border border-gray-700 rounded-lg p-4 hover:border-red-500/50"
+                    >
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <AlertTriangle className="w-4 h-4 text-red-500" />
+                            <h4 className="font-semibold text-red-500">
+                              {item.disaster_title}
+                            </h4>
+                          </div>
+
+                          <p className="text-sm text-gray-300 mt-2">
+                            {item.description}
+                          </p>
+                          <p className="text-xs text-gray-400 mt-2">
+                            {formatDateTime(item.updatedAt)}
+                          </p>
                         </div>
-                        <div className="flex items-center gap-2 text-sm text-gray-400 mt-1">
-                          <MapPin className="w-4 h-4" />
-                          <span>{alert.location}</span>
-                        </div>
-                        <p className="text-sm text-gray-300 mt-2">
-                          {alert.description}
-                        </p>
-                        <p className="text-xs text-gray-400 mt-2">
-                          {alert.time}
-                        </p>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
               </div>
             </div>
           </div>
@@ -252,32 +297,7 @@ const VolunteerDashboard = () => {
                 Navigate
               </button>
             </div>
-            {/* Placeholder for map */}
-            {/* <div className="relative h-[400px] bg-gray-800 rounded-lg overflow-hidden">
-              <svg
-                className="absolute inset-0 w-full h-full"
-                viewBox="0 0 100 100"
-                preserveAspectRatio="none"
-              >
-                <path
-                  d="M0,0 L100,100 M100,0 L0,100"
-                  stroke="rgba(255,255,255,0.1)"
-                  strokeWidth="0.5"
-                />
-                <circle cx="30" cy="40" r="2" fill="#4CAF50" />
-                <circle cx="70" cy="60" r="2" fill="#F44336" />
-                <path
-                  d="M30,40 Q50,50 70,60"
-                  stroke="#FFD700"
-                  strokeWidth="0.5"
-                  fill="none"
-                />
-              </svg>
-              <div className="absolute bottom-4 right-4 bg-[#1a1f2e] p-3 rounded-lg shadow-lg">
-                <p className="text-sm">Active Volunteers: 12</p>
-                <p className="text-xs text-gray-400">In your area</p>
-              </div>
-            </div> */}
+
             <MapView />
           </div>
         </div>
@@ -287,40 +307,42 @@ const VolunteerDashboard = () => {
           <div className="bg-[#1e2538] rounded-lg p-6 shadow-lg">
             <h3 className="text-lg font-semibold mb-4">Active Shelters</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {shelters.map((shelter) => (
-                <div
-                  key={shelter.id}
-                  className="border border-gray-700 rounded-lg p-4 hover:border-green-500/50"
-                >
-                  <div className="flex items-start gap-4">
-                    <div className="w-10 h-10 bg-green-500/20 rounded-lg flex items-center justify-center">
-                      <Building2 className="w-5 h-5 text-green-500" />
-                    </div>
-                    <div>
-                      <h4 className="font-semibold">{shelter.name}</h4>
-                      <div className="flex items-center gap-4 text-sm text-gray-400 mt-2">
-                        <div className="flex items-center gap-1">
-                          <Users className="w-4 h-4" />
-                          <span>{shelter.capacity}</span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <span className="w-2 h-2 rounded-full bg-green-500"></span>
-                          <span>{shelter.volunteers} volunteers</span>
-                        </div>
+              {shelters &&
+                shelters.map((shelter) => (
+                  <div
+                    key={shelter._id}
+                    className="border border-gray-700 rounded-lg p-4 hover:border-green-500/50"
+                  >
+                    <div className="flex items-start gap-4">
+                      <div className="w-10 h-10 bg-green-500/20 rounded-lg flex items-center justify-center">
+                        <Building2 className="w-5 h-5 text-green-500" />
                       </div>
-                      <span
-                        className={`mt-2 inline-block px-2 py-1 rounded text-xs ${
-                          shelter.status === "Available"
-                            ? "bg-green-500/20 text-green-500"
-                            : "bg-red-500/20 text-red-500"
-                        }`}
-                      >
-                        {shelter.status}
-                      </span>
+                      <div>
+                        <h4 className="font-semibold">
+                          {shelter.shelter_name}
+                        </h4>
+                        <div className="flex items-center gap-4 text-sm text-gray-400 mt-2">
+                          <div className="flex items-center gap-1">
+                            <Users className="w-4 h-4" />
+                            <span>
+                              {shelter.capacity.current_occupancy}/
+                              {shelter.capacity.max_capacity}
+                            </span>
+                          </div>
+                        </div>
+                        <span
+                          className={`mt-2 inline-block px-2 py-1 rounded text-xs ${
+                            shelter.status === "active"
+                              ? "bg-green-500/20 text-green-500"
+                              : "bg-red-500/20 text-red-500"
+                          }`}
+                        >
+                          {shelter.status}
+                        </span>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                ))}
             </div>
           </div>
         </div>
@@ -348,6 +370,17 @@ const MapView = () => {
       lat: 9.851076591262078,
     },
   ]);
+  const [driverLoc, setDriverLoc] = useState([
+    {
+      lng: 76.94006268199648,
+      lat: 9.851076591262078,
+    },
+  ]);
+
+  const [shelterLoc, setShelterLoc] = useState({
+    lng: 76.94006268199648,
+    lat: 9.851076591262078,
+  });
 
   useEffect(() => {
     axios
@@ -372,6 +405,36 @@ const MapView = () => {
         setFamilyLoc([
           ...familyLoc,
           ...response.data.families.map((item) => {
+            return {
+              lng: item.address.location.coordinates[0],
+              lat: item.address.location.coordinates[1],
+            };
+          }),
+        ]);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+    axios
+      .get(`${BASE_URL}/admin/get-all-drivers`)
+      .then((response) => {
+        setDriverLoc([
+          ...response.data.drivers.map((item) => {
+            return {
+              lng: item.location.coordinates[0],
+              lat: item.location.coordinates[1],
+            };
+          }),
+        ]);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+    axios
+      .get(`${BASE_URL}/driver/get-all-shelters`)
+      .then((response) => {
+        setShelterLoc([
+          ...response.data.Shelters.map((item) => {
             return {
               lng: item.address.location.coordinates[0],
               lat: item.address.location.coordinates[1],
@@ -492,6 +555,106 @@ const MapView = () => {
           "circle-radius": 20,
           "circle-stroke-width": 1,
           "circle-stroke-color": "blue",
+        },
+      });
+
+      // /To add multiple driver markers, marker clustering
+      myMap.addSource("drivers", {
+        type: "geojson",
+
+        data: {
+          type: "FeatureCollection",
+          features: driverLoc.map((item) => {
+            return {
+              geometry: {
+                type: "Point",
+                coordinates: [item.lng, item.lat],
+              },
+            };
+          }),
+        },
+        cluster: true,
+        clusterMaxZoom: 14,
+        clusterRadius: 50,
+      });
+
+      //Color in wider view
+      myMap.addLayer({
+        id: "driver-clusters",
+        type: "circle",
+        source: "drivers",
+        filter: ["has", "point_count"],
+
+        paint: {
+          "circle-color": [
+            "step",
+            ["get", "point_count"],
+            "yellow",
+            2,
+            "yellow",
+          ],
+          "circle-radius": ["step", ["get", "point_count"], 20, 2, 30, 4, 40],
+        },
+      });
+
+      //Color in closer view
+      myMap.addLayer({
+        id: "driver-unclustered-point",
+        type: "circle",
+        source: "drivers",
+        filter: ["!", ["has", "point_count"]],
+
+        paint: {
+          "circle-color": "yellow",
+          "circle-radius": 20,
+          "circle-stroke-width": 1,
+          "circle-stroke-color": "yellow",
+        },
+      });
+
+      //To add multiple shelters markers, marker clustering
+      myMap.addSource("shelters", {
+        type: "geojson",
+        data: {
+          type: "FeatureCollection",
+          features: shelterLoc.map((item) => {
+            return {
+              geometry: {
+                type: "Point",
+                coordinates: [item.lng, item.lat],
+              },
+            };
+          }),
+        },
+        cluster: true,
+        clusterMaxZoom: 14,
+        clusterRadius: 50,
+      });
+
+      //Color in wider view
+      myMap.addLayer({
+        id: "shelters-clusters",
+        type: "circle",
+        source: "shelters",
+        filter: ["has", "point_count"],
+
+        paint: {
+          "circle-color": ["step", ["get", "point_count"], "green", 2, "green"],
+          "circle-radius": ["step", ["get", "point_count"], 20, 2, 30, 4, 40],
+        },
+      });
+
+      //Color in closer view
+      myMap.addLayer({
+        id: "shelters-unclustered-point",
+        type: "circle",
+        source: "shelters",
+        filter: ["!", ["has", "point_count"]],
+        paint: {
+          "circle-color": "green",
+          "circle-radius": 20,
+          "circle-stroke-width": 1,
+          "circle-stroke-color": "green",
         },
       });
     });

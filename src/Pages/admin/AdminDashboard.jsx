@@ -64,6 +64,7 @@ const AdminDashboard = () => {
 
   const [disasterReport, setDisasterReport] = useState(null);
   const [disasterCount, setDisasterCount] = useState(3);
+  const [shelterCount, setShelterCount] = useState(3);
   const [report, setReport] = useState();
 
   useEffect(() => {
@@ -106,6 +107,9 @@ const AdminDashboard = () => {
       axios.get(`${BASE_URL}/admin/get-all-drivers`).then((response) => {
         setDriverCount(response.data.drivers.length);
       });
+      axios.get(`${BASE_URL}/driver/get-all-shelters`).then((response) => {
+        setShelterCount(response.data.Shelters.length);
+      });
     };
 
     if (disasterReport) {
@@ -131,7 +135,7 @@ const AdminDashboard = () => {
     },
     {
       title: "Shelters",
-      value: "57",
+      value: `${shelterCount}`,
       icon: Building2,
       iconBg: "bg-green-500/20",
       iconColor: "text-green-500",
