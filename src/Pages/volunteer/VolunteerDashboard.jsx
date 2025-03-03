@@ -30,7 +30,13 @@ const VolunteerDashboard = () => {
   const [shelters, setShelters] = useState(null);
   const [shelterCount, setShelterCount] = useState(3);
   const [volunteerCount, setVolunteerCount] = useState(3);
-
+  const [roadBlockLoc, setRoadBlockLoc] = useState(null);
+  const [roadBlock, setRoadBlock] = useState({
+    volunteerId: localStorage.getItem("volunteerId"),
+    locaiton: {
+      coordinates: [],
+    },
+  });
   const [alerts] = useState([
     {
       id: 1,
@@ -268,13 +274,31 @@ const VolunteerDashboard = () => {
           <div className="lg:col-span-2 bg-[#1e2538] rounded-lg shadow-lg p-3">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-semibold">Area Map</h3>
-              <button className="flex items-center gap-2 bg-blue-500/10 text-blue-500 px-4 py-2 rounded-lg hover:bg-blue-500/20 transition-colors">
-                <Navigation2 className="w-4 h-4" />
-                Navigate
+              <button
+                className="flex items-center gap-2 bg-blue-500/10 text-blue-500 px-4 py-2 rounded-lg hover:bg-blue-500/20 transition-colors"
+                onClick={() => {
+                  if (roadBlock) {
+                    axios
+                      .post(
+                        `${BASE_URL}/volunteer/report-road-block`,
+                        roadBlock
+                      )
+                      .then((response) => {
+                        console.log(response.message);
+                      })
+                      .catch((error) => {
+                        console.log(error);
+                      });
+                  } else {
+                    console.log("roadBlock is required");
+                  }
+                }}
+              >
+                Add Block
               </button>
             </div>
 
-            <MapView />
+            <MapView setRoadBlock={setRoadBlock} roadBlock={roadBlock} />
           </div>
         </div>
 
@@ -327,8 +351,28 @@ const VolunteerDashboard = () => {
   );
 };
 
+const createCustomMarker = (color1, color2) => {
+  // Create the main container
+  var customMarker = document.createElement("div");
+  customMarker.className = "relative w-10 h-10 rounded-full animate-pulse";
+
+  // Create outer circle
+  var outerCircle = document.createElement("div");
+  outerCircle.className = `absolute inset-0 rounded-full ${color2} `;
+
+  // Create inner circle
+  var innerCircle = document.createElement("div");
+  innerCircle.className = `absolute inset-2 rounded-full  ${color1} `;
+
+  // Append circles to marker
+  customMarker.appendChild(outerCircle);
+  customMarker.appendChild(innerCircle);
+
+  return customMarker;
+};
+
 //local components
-const MapView = () => {
+const MapView = ({ roadBlock, setRoadBlock }) => {
   //map dependencies
   const [disasterLocation, setDisasterLocation] = useState([
     {
@@ -357,7 +401,17 @@ const MapView = () => {
     lng: 76.94006268199648,
     lat: 9.851076591262078,
   });
+  const [rMarkerLoc, setrMarkerLoc] = useState({
+    lng: 76.94006268199648,
+    lat: 9.851076591262078,
+  });
 
+  const [blockLoc, setBlockLoc] = useState([
+    {
+      lng: 76.94006268199648,
+      lat: 9.851076591262078,
+    },
+  ]);
   useEffect(() => {
     axios
       .get(`${BASE_URL}/admin/get-all-disaster-reports`)
@@ -421,6 +475,18 @@ const MapView = () => {
       .catch((error) => {
         console.log(error);
       });
+
+    axios.get(`${BASE_URL}/volunteer/get-all-road-blocks`).then((response) => {
+      console.log(response);
+      setBlockLoc([
+        ...response.data.roadBlocks.map((item) => {
+          return {
+            lng: item.location.coordinates[0],
+            lat: item.location.coordinates[1],
+          };
+        }),
+      ]);
+    });
   }, []);
 
   useEffect(() => {
@@ -436,6 +502,26 @@ const MapView = () => {
       zoom: 15,
       branding: false,
     });
+    const redMarker = createCustomMarker("bg-red-600", "bg-red-400/50");
+    const rMarker = olaMaps
+      .addMarker({
+        element: redMarker,
+        offset: [0, 6],
+        anchor: "bottom",
+        draggable: true,
+      })
+      .setLngLat([rMarkerLoc.lng, rMarkerLoc.lat])
+      .addTo(myMap);
+
+    function onDrag() {
+      const lngLat = rMarker.getLngLat();
+      setRoadBlock({
+        volunteerId: roadBlock.volunteerId,
+        location: { coordinates: [lngLat.lng, lngLat.lat] },
+      });
+      setrMarkerLoc(lngLat);
+    }
+    rMarker.on("drag", onDrag);
 
     myMap.on("load", () => {
       //To add multiple disaster markers, marker clustering
@@ -633,8 +719,60 @@ const MapView = () => {
           "circle-stroke-color": "green",
         },
       });
+
+      //To add multiple road blocks markers, marker clustering
+      myMap.addSource("road-blocks", {
+        type: "geojson",
+        data: {
+          type: "FeatureCollection",
+          features: blockLoc.map((item) => {
+            return {
+              geometry: {
+                type: "Point",
+                coordinates: [item.lng, item.lat],
+              },
+            };
+          }),
+        },
+        cluster: true,
+        clusterMaxZoom: 14,
+        clusterRadius: 50,
+      });
+
+      //Color in wider view
+      myMap.addLayer({
+        id: "road-blocks-clusters",
+        type: "circle",
+        source: "road-blocks",
+        filter: ["has", "point_count"],
+
+        paint: {
+          "circle-color": [
+            "step",
+            ["get", "point_count"],
+            "orange",
+            2,
+            "orange",
+          ],
+          "circle-radius": ["step", ["get", "point_count"], 20, 2, 30, 4, 40],
+        },
+      });
+
+      //Color in closer view
+      myMap.addLayer({
+        id: "road-blocks-unclustered-point",
+        type: "circle",
+        source: "road-blocks",
+        filter: ["!", ["has", "point_count"]],
+        paint: {
+          "circle-color": "orange",
+          "circle-radius": 20,
+          "circle-stroke-width": 1,
+          "circle-stroke-color": "orange",
+        },
+      });
     });
-  }, [disasterLocation, familyLoc]);
+  }, [disasterLocation, familyLoc, blockLoc]);
   return (
     <div
       id="map"
