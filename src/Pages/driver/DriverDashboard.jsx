@@ -260,6 +260,12 @@ const MapView = ({ destinaitonLoc }) => {
     lng: 76.94006268199648,
     lat: 9.851076591262078,
   });
+  const [blockLoc, setBlockLoc] = useState([
+    {
+      lng: 76.94006268199648,
+      lat: 9.851076591262078,
+    },
+  ]);
 
   const [routeCoords, setRouteCoords] = useState(null);
   const [olaMaps, setOlaMaps] = useState(null);
@@ -312,6 +318,17 @@ const MapView = ({ destinaitonLoc }) => {
       .catch((error) => {
         console.log(error);
       });
+
+    axios.get(`${BASE_URL}/volunteer/get-all-road-blocks`).then((response) => {
+      setBlockLoc([
+        ...response.data.roadBlocks.map((item) => {
+          return {
+            lng: item.location.coordinates[0],
+            lat: item.location.coordinates[1],
+          };
+        }),
+      ]);
+    });
   }, []);
 
   //creating an instance for olaMaps
@@ -563,6 +580,58 @@ const MapView = ({ destinaitonLoc }) => {
           },
         });
 
+        //To add multiple road blocks markers, marker clustering
+        globalMap.addSource("road-blocks", {
+          type: "geojson",
+          data: {
+            type: "FeatureCollection",
+            features: blockLoc.map((item) => {
+              return {
+                geometry: {
+                  type: "Point",
+                  coordinates: [item.lng, item.lat],
+                },
+              };
+            }),
+          },
+          cluster: true,
+          clusterMaxZoom: 14,
+          clusterRadius: 50,
+        });
+
+        //Color in wider view
+        globalMap.addLayer({
+          id: "road-blocks-clusters",
+          type: "circle",
+          source: "road-blocks",
+          filter: ["has", "point_count"],
+
+          paint: {
+            "circle-color": [
+              "step",
+              ["get", "point_count"],
+              "orange",
+              2,
+              "orange",
+            ],
+            "circle-radius": ["step", ["get", "point_count"], 20, 2, 30, 4, 40],
+          },
+        });
+
+        //Color in closer view
+        globalMap.addLayer({
+          id: "road-blocks-unclustered-point",
+          type: "circle",
+          source: "road-blocks",
+          filter: ["!", ["has", "point_count"]],
+          paint: {
+            "circle-color": "orange",
+            "circle-radius": 20,
+            "circle-stroke-width": 1,
+            "circle-stroke-color": "orange",
+          },
+        });
+
         globalMap.addSource("route", {
           type: "geojson",
           data: {
@@ -665,6 +734,7 @@ const MapView = ({ destinaitonLoc }) => {
   }, [
     familyLoc,
     disasterLocation,
+    blockLoc,
     shelterLoc,
     olaMaps,
     globalMap,

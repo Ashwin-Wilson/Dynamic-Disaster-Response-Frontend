@@ -405,6 +405,13 @@ const MapView = ({ disasterReport }) => {
     lat: 9.851076591262078,
   });
 
+  const [blockLoc, setBlockLoc] = useState([
+    {
+      lng: 76.94006268199648,
+      lat: 9.851076591262078,
+    },
+  ]);
+
   useEffect(() => {
     axios
       .get(`${BASE_URL}/admin/get-all-families`)
@@ -462,6 +469,17 @@ const MapView = ({ disasterReport }) => {
       .catch((error) => {
         console.log(error);
       });
+    axios.get(`${BASE_URL}/volunteer/get-all-road-blocks`).then((response) => {
+      console.log(response);
+      setBlockLoc([
+        ...response.data.roadBlocks.map((item) => {
+          return {
+            lng: item.location.coordinates[0],
+            lat: item.location.coordinates[1],
+          };
+        }),
+      ]);
+    });
   }, []);
 
   useEffect(() => {
@@ -674,6 +692,58 @@ const MapView = ({ disasterReport }) => {
           "circle-radius": 20,
           "circle-stroke-width": 1,
           "circle-stroke-color": "green",
+        },
+      });
+
+      //To add multiple road blocks markers, marker clustering
+      myMap.addSource("road-blocks", {
+        type: "geojson",
+        data: {
+          type: "FeatureCollection",
+          features: blockLoc.map((item) => {
+            return {
+              geometry: {
+                type: "Point",
+                coordinates: [item.lng, item.lat],
+              },
+            };
+          }),
+        },
+        cluster: true,
+        clusterMaxZoom: 14,
+        clusterRadius: 50,
+      });
+
+      //Color in wider view
+      myMap.addLayer({
+        id: "road-blocks-clusters",
+        type: "circle",
+        source: "road-blocks",
+        filter: ["has", "point_count"],
+
+        paint: {
+          "circle-color": [
+            "step",
+            ["get", "point_count"],
+            "orange",
+            2,
+            "orange",
+          ],
+          "circle-radius": ["step", ["get", "point_count"], 20, 2, 30, 4, 40],
+        },
+      });
+
+      //Color in closer view
+      myMap.addLayer({
+        id: "road-blocks-unclustered-point",
+        type: "circle",
+        source: "road-blocks",
+        filter: ["!", ["has", "point_count"]],
+        paint: {
+          "circle-color": "orange",
+          "circle-radius": 20,
+          "circle-stroke-width": 1,
+          "circle-stroke-color": "orange",
         },
       });
     });
