@@ -1,33 +1,44 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Bell, LogOut, User, Grid, MapPin, AlertTriangle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import FamilyRegistrationForm from "./FamilyRegistrationForm";
+import axios from "axios";
+
+const BASE_URL = import.meta.env.VITE_BASE_URL;
 
 const FamilyDashboard = () => {
   const navigate = useNavigate();
   const [isFormOpen, setIsFormOpen] = useState(false);
   const familyName = localStorage.getItem("familyName");
   const familyEmail = localStorage.getItem("familyEmail");
-  const shelters = [
-    {
-      name: "Centeral Community Adoor",
-      capacity: "234/500",
-      distance: 6,
-      status: "Available",
-    },
-    {
-      name: "East District School",
-      capacity: "100/100",
-      distance: 6,
-      status: "Unavailable",
-    },
-    {
-      name: "Holycross Hospital",
-      capacity: "259/350",
-      distance: 12,
-      status: "Available",
-    },
-  ];
+  const [shelters, setShelters] = useState(null);
+  // const shelters = [
+  //   {
+  //     name: "Centeral Community Adoor",
+  //     capacity: "234/500",
+  //     distance: 6,
+  //     status: "Available",
+  //   },
+  //   {
+  //     name: "East District School",
+  //     capacity: "100/100",
+  //     distance: 6,
+  //     status: "Unavailable",
+  //   },
+  //   {
+  //     name: "Holycross Hospital",
+  //     capacity: "259/350",
+  //     distance: 12,
+  //     status: "Available",
+  //   },
+  // ];
+
+  useEffect(() => {
+    axios.get(`${BASE_URL}/driver/get-all-shelters`).then((response) => {
+      console.log(response.data.Shelters);
+      setShelters(response.data.Shelters);
+    });
+  }, []);
 
   return (
     <div className="min-h-screen bg-slate-900 p-6">
@@ -105,32 +116,32 @@ const FamilyDashboard = () => {
       <div className="bg-slate-800/50 rounded-lg p-6">
         <h2 className="text-gray-200 text-xl mb-4">Available Shelters</h2>
         <div className="space-y-4">
-          {shelters.map((shelter, index) => (
-            <div key={index} className="bg-slate-800/80 rounded-lg p-4">
-              <h3 className="text-gray-200 mb-3">{shelter.name}</h3>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-4">
-                  <div className="flex items-center space-x-2">
-                    <User className="w-4 h-4 text-blue-500" />
-                    <span className="text-gray-400">{shelter.capacity}</span>
+          {shelters &&
+            shelters.map((shelter, index) => (
+              <div key={index} className="bg-slate-800/80 rounded-lg p-4">
+                <h3 className="text-gray-200 mb-3">{shelter.shelter_name}</h3>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-4">
+                    <div className="flex items-center space-x-2">
+                      <User className="w-4 h-4 text-blue-500" />
+                      <span className="text-gray-400">
+                        {shelter.capacity.current_occupancy}/
+                        {shelter.capacity.max_capacity}
+                      </span>
+                    </div>
                   </div>
-                  <div className="flex items-center space-x-2">
-                    <MapPin className="w-4 h-4 text-red-500" />
-                    <span className="text-gray-400">{shelter.distance}</span>
-                  </div>
+                  <span
+                    className={`px-3 py-1 rounded-full text-sm ${
+                      shelter.status === "active"
+                        ? "text-green-500 bg-green-500/10"
+                        : "text-gray-400 bg-gray-500/10"
+                    }`}
+                  >
+                    {shelter.status}
+                  </span>
                 </div>
-                <span
-                  className={`px-3 py-1 rounded-full text-sm ${
-                    shelter.status === "Available"
-                      ? "text-green-500 bg-green-500/10"
-                      : "text-gray-400 bg-gray-500/10"
-                  }`}
-                >
-                  {shelter.status}
-                </span>
               </div>
-            </div>
-          ))}
+            ))}
         </div>
       </div>
 
