@@ -3,6 +3,7 @@ import { Bell, LogOut, User, Grid, MapPin, AlertTriangle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import FamilyRegistrationForm from "./FamilyRegistrationForm";
 import axios from "axios";
+import FamilyShelterRoute from "./FamilyShelterRoute";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
@@ -12,6 +13,11 @@ const FamilyDashboard = () => {
   const familyName = localStorage.getItem("familyName");
   const familyEmail = localStorage.getItem("familyEmail");
   const [shelters, setShelters] = useState(null);
+  const [destinaitonLoc, setDestinaitonLoc] = useState({
+    lng: 76.94006268199648,
+    lat: 9.851076591262078,
+  });
+  const [viewFamilyShleterRoute, setViewFamilyShleterRoute] = useState(false);
   // const shelters = [
   //   {
   //     name: "Centeral Community Adoor",
@@ -70,29 +76,10 @@ const FamilyDashboard = () => {
             </p>
           </div>
         </div>
-
-        <div className="space-y-4">
-          <button className="flex items-center space-x-3 text-gray-300 hover:text-gray-100">
-            <Grid className="w-5 h-5" />
-            <span>Dashboard</span>
-          </button>
-          <button className="flex items-center space-x-3 text-gray-300 hover:text-gray-100">
-            <User className="w-5 h-5" />
-            <span>Profile</span>
-          </button>
-        </div>
       </div>
 
       {/* Action Cards Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-        <div className="bg-slate-800/50 rounded-lg p-6">
-          <div className="flex items-center space-x-3 mb-4">
-            <MapPin className="w-6 h-6 text-blue-500" />
-            <h3 className="text-gray-200 text-lg">Nearby Shelters Route</h3>
-          </div>
-          <p className="text-gray-400">Find safe location near you</p>
-        </div>
-
         <div
           className="bg-slate-800/50 rounded-lg p-6 cursor-pointer"
           onClick={() => setIsFormOpen(true)}
@@ -104,7 +91,12 @@ const FamilyDashboard = () => {
           <p className="text-gray-400">Register your family details</p>
         </div>
 
-        <div className="bg-slate-800/50 rounded-lg p-6">
+        <div
+          className="bg-slate-800/50 rounded-lg p-6"
+          onClick={() => {
+            navigate("/family/notification");
+          }}
+        >
           <div className="flex items-center space-x-3 mb-4">
             <Bell className="w-6 h-6 text-yellow-500" />
             <h3 className="text-gray-200 text-lg">Notifications</h3>
@@ -118,7 +110,18 @@ const FamilyDashboard = () => {
         <div className="space-y-4">
           {shelters &&
             shelters.map((shelter, index) => (
-              <div key={index} className="bg-slate-800/80 rounded-lg p-4">
+              <div
+                key={index}
+                className="bg-slate-800/80 rounded-lg p-4"
+                onClick={async () => {
+                  await setDestinaitonLoc({
+                    lng: shelter.address.location.coordinates[0],
+                    lat: shelter.address.location.coordinates[1],
+                  });
+
+                  setViewFamilyShleterRoute(!viewFamilyShleterRoute);
+                }}
+              >
                 <h3 className="text-gray-200 mb-3">{shelter.shelter_name}</h3>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-4">
@@ -144,6 +147,9 @@ const FamilyDashboard = () => {
             ))}
         </div>
       </div>
+      {viewFamilyShleterRoute && (
+        <FamilyShelterRoute destinaitonLoc={destinaitonLoc} />
+      )}
 
       {/* User Data Form Modal */}
       <FamilyRegistrationForm

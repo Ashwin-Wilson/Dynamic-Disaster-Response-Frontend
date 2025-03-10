@@ -54,7 +54,7 @@ const VolunteerSignUp = () => {
     },
     languages: {
       english: true,
-      spanish: false,
+      malayalam: false,
       sign_language: false,
     },
   });
@@ -979,17 +979,17 @@ const VolunteerSignUp = () => {
                     <div className="flex items-center space-x-3">
                       <input
                         type="checkbox"
-                        id="spanish"
-                        name="languages.spanish"
-                        checked={skillsAndTraining.languages.spanish}
+                        id="malayalam"
+                        name="languages.malayalam"
+                        checked={skillsAndTraining.languages.malayalam}
                         onChange={handleSkillsChange}
                         className="h-5 w-5 rounded border-gray-600 text-green-600 focus:ring-green-500 bg-white/10"
                       />
                       <label
-                        htmlFor="spanish"
+                        htmlFor="malayalam"
                         className="text-sm text-gray-300"
                       >
-                        Spanish
+                        Malayalam
                       </label>
                     </div>
                     <div className="flex items-center space-x-3">

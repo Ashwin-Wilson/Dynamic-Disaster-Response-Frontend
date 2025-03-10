@@ -17,6 +17,7 @@ import CaretakerLogin from "./Pages/caretaker/CaretakerLogin";
 import VolunteerSignUp from "./Pages/volunteer/VolunteerSignUp";
 import VolunteerDashboard from "./Pages/volunteer/VolunteerDashboard";
 import VolunteerLogin from "./Pages/volunteer/VolunteerLogin";
+import FamilyNotification from "./Pages/family/FamilyNotification";
 
 function App() {
   return (
@@ -30,6 +31,7 @@ function App() {
           <Route path="/family/signup" element={<FamilySignUp />} />
           <Route path="/family/login" element={<FamilyLogin />} />
           <Route path="/family/dashboard" element={<FamilyDashboard />} />
+          <Route path="/family/notification" element={<FamilyNotification />} />
           <Route path="/driver/signup" element={<DriverSignupPage />} />
           <Route path="/driver/login" element={<DriverLoginPage />} />
           <Route path="/driver/dashboard" element={<DriverDashboard />} />
