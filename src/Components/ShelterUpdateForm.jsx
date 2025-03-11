@@ -37,6 +37,7 @@ const createCustomMarker = (color1, color2) => {
 const ShelterManagementForm = ({
   onClose,
   shelterId,
+  caretakerId,
   isUpdate,
   setShelterDetails,
 }) => {
@@ -317,6 +318,15 @@ const ShelterManagementForm = ({
           .catch((error) => {
             console.log(error);
           });
+
+        const token = localStorage.getItem("caretakerToken");
+        const shelterId = localStorage.getItem("shelterId");
+        await axios.post(`${BASE_URL}/caretaker/update`, {
+          token,
+          updates: {
+            shelter_id: shelterId,
+          },
+        });
       } else {
         await axios
           .post(`${BASE_URL}/caretaker/shelter/create`, formData)
@@ -327,6 +337,14 @@ const ShelterManagementForm = ({
           .catch((error) => {
             console.log(error);
           });
+        const token = localStorage.getItem("caretakerToken");
+        const shelterId = localStorage.getItem("shelterId");
+        await axios.post(`${BASE_URL}/caretaker/update`, {
+          token,
+          updates: {
+            shelter_id: shelterId,
+          },
+        });
       }
       onClose();
     } catch (error) {

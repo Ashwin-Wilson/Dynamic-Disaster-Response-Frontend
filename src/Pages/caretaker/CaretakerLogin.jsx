@@ -42,7 +42,13 @@ const CaretakerLogin = () => {
 
       if (response.data && response.data.token) {
         // Store token from response
+        console.log(response.data);
         localStorage.setItem("token", response.data.token);
+        localStorage.setItem("caretakerId", response.data.caretaker._id);
+        localStorage.setItem(
+          "caretakerName",
+          response.data.caretaker.full_name
+        );
         localStorage.setItem("caretakerEmail", formData.email);
 
         // Show success message

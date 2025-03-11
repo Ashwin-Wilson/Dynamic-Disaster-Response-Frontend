@@ -41,6 +41,8 @@ const FamilyLogin = () => {
       if (response.data && response.data.token) {
         // Store token from response
         localStorage.setItem("token", response.data.token);
+        console.log(response.data);
+        localStorage.setItem("familyName", response.data.family.family_name);
         localStorage.setItem("familyEmail", formData.email);
 
         // Show success message

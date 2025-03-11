@@ -52,7 +52,7 @@ const CaretakerSignUp = () => {
   // Special Skills
   const [languages, setLanguages] = useState({
     english: true,
-    spanish: false,
+    malayalam: false,
     sign_language: false,
   });
   const [otherLanguages, setOtherLanguages] = useState("");
@@ -259,6 +259,7 @@ const CaretakerSignUp = () => {
       });
 
       localStorage.setItem("caretakerToken", response.data.token);
+      localStorage.setItem("caretakerId", response.data.newCaretaker._id);
       localStorage.setItem("caretakerName", fullName);
       localStorage.setItem("caretakerEmail", email);
       navigate("/caretaker/dashboard");
@@ -846,17 +847,17 @@ const CaretakerSignUp = () => {
                     <div className="flex items-center space-x-3">
                       <input
                         type="checkbox"
-                        id="spanish"
-                        name="spanish"
-                        checked={languages.spanish}
+                        id="malayalam"
+                        name="malayalam"
+                        checked={languages.malayalam}
                         onChange={handleLanguageChange}
                         className="h-5 w-5 rounded border-gray-600 text-purple-600 focus:ring-purple-500 bg-white/10"
                       />
                       <label
-                        htmlFor="spanish"
+                        htmlFor="malayalam"
                         className="text-sm text-gray-300"
                       >
-                        Spanish
+                        Malayalam
                       </label>
                     </div>
                     <div className="flex items-center space-x-3">
