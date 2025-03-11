@@ -41,7 +41,7 @@ const FamilyLogin = () => {
       if (response.data && response.data.token) {
         // Store token from response
         localStorage.setItem("token", response.data.token);
-        console.log(response.data);
+
         localStorage.setItem("familyName", response.data.family.family_name);
         localStorage.setItem("familyEmail", formData.email);
 
@@ -78,7 +78,8 @@ const FamilyLogin = () => {
         }
       } else if (error.request) {
         setError(
-          "Cannot connect to server. Please check your internet connection."
+          "Cannot connect to server. Please check your internet connection." +
+            String(error.request)
         );
       } else {
         setError("An error occurred during login. Please try again.");
