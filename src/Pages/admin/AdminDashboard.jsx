@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { OlaMaps } from "../../../OlaMapsWebSDKNew";
+import PropTypes from "prop-types";
 
 //Components
 import FamilyNetworkGraph from "../../Components/FamilyNetworkGraph";
@@ -14,7 +15,6 @@ import {
   AlertTriangle,
   Users,
   Building2,
-  Ambulance,
   Car,
   User,
   Menu,
@@ -28,8 +28,47 @@ import DisasterReportForm from "../../Components/DisasterReportForm";
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 const MAP_API_KEY = import.meta.env.VITE_MAPS_API_KEY;
 
+// Twilio credentials from environment variables
+const TWILIO_SID = import.meta.env.VITE_TWILIO_SID;
+const TWILIO_TOKEN = import.meta.env.VITE_TWILIO_TOKEN;
+const TWILIO_MESSAGING_SID = import.meta.env.VITE_TWILIO_MESSAGING_SID;
+const EMERGENCY_PHONE = import.meta.env.VITE_EMERGENCY_PHONE;
+
 ChartJS.register(ArcElement, Tooltip, Legend);
 
+// Function to send SMS alert
+const sendSMSAlert = async (message) => {
+  try {
+    console.log("Sending SMS alert:", message);
+
+    // This direct implementation is for DEMONSTRATION PURPOSES ONLY
+    // In a real application, this should be handled by a secure backend endpoint
+    const response = await axios({
+      method: "post",
+      url: `https://api.twilio.com/2010-04-01/Accounts/${TWILIO_SID}/Messages.json`,
+      auth: {
+        username: TWILIO_SID,
+        password: TWILIO_TOKEN,
+      },
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      data: new URLSearchParams({
+        To: EMERGENCY_PHONE,
+        MessagingServiceSid: TWILIO_MESSAGING_SID,
+        Body: message,
+      }),
+    });
+
+    console.log("SMS sent successfully:", response.data.sid);
+    return true;
+  } catch (error) {
+    console.error("Error sending SMS:", error);
+    return false;
+  }
+};
+
+// eslint-disable-next-line no-unused-vars
 const createCustomMarker = (color1, color2) => {
   // Create the main container
   var customMarker = document.createElement("div");
@@ -373,6 +412,17 @@ const AdminDashboard = () => {
         <DisasterReportForm
           onClose={() => setViewDisasterReportForm(false)}
           role="admin"
+          onSubmit={(reportData) => {
+            // Send SMS alert when disaster is reported
+            const alertMessage = `EMERGENCY ALERT: ${reportData.disasterType} disaster reported. Severity: ${reportData.severity}. Location: ${reportData.location}. ${reportData.description}`;
+            sendSMSAlert(alertMessage).then((success) => {
+              if (success) {
+                console.log("Emergency SMS alert sent");
+              } else {
+                console.error("Failed to send emergency SMS alert");
+              }
+            });
+          }}
         />
       )}
     </div>
@@ -496,7 +546,8 @@ const MapView = ({ disasterReport }) => {
       branding: false,
     });
 
-    const redMarker = createCustomMarker("bg-red-600", "bg-red-400/50");
+    // Commented out as currently unused
+    // const redMarker = createCustomMarker("bg-red-600", "bg-red-400/50");
 
     myMap.on("load", () => {
       //To add multiple disaster markers, marker clustering
@@ -757,6 +808,10 @@ const MapView = ({ disasterReport }) => {
       ></div>
     </div>
   );
+};
+
+MapView.propTypes = {
+  disasterReport: PropTypes.array.isRequired,
 };
 
 export default AdminDashboard;
