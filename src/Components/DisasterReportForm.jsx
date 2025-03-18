@@ -26,7 +26,7 @@ const createCustomMarker = (color1, color2) => {
   return customMarker;
 };
 
-const DisasterReportForm = ({ onClose, role }) => {
+const DisasterReportForm = ({ onClose, role, onSubmit }) => {
   const [mapMarker, setMapMarker] = useState(null);
   const [olaMap, setOlaMap] = useState(null);
   const [rMarkerLoc, setrMarkerLoc] = useState({
@@ -102,9 +102,21 @@ const DisasterReportForm = ({ onClose, role }) => {
     formData.location.coordinates = [rMarkerLoc.lng, rMarkerLoc.lat];
 
     try {
-      axios.post(`${BASE_URL}/admin/report-disaster`, {
+      const response = await axios.post(`${BASE_URL}/admin/report-disaster`, {
         ...formData,
       });
+
+      // Call the onSubmit prop with the form data if it exists
+      if (onSubmit) {
+        const reportData = {
+          disasterType: formData.disaster_title,
+          description: formData.description,
+          location: `${rMarkerLoc.lat}, ${rMarkerLoc.lng}`,
+          severity: formData.intensity,
+          id: response.data?._id || "unknown",
+        };
+        onSubmit(reportData);
+      }
     } catch (error) {
       console.log(error);
     }
