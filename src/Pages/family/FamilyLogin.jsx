@@ -43,6 +43,7 @@ const FamilyLogin = () => {
         localStorage.setItem("token", response.data.token);
 
         localStorage.setItem("familyName", response.data.family.family_name);
+        localStorage.setItem("familyId", response.data.family._id);
         localStorage.setItem("familyEmail", formData.email);
 
         // Show success message

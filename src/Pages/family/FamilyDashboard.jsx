@@ -41,7 +41,6 @@ const FamilyDashboard = () => {
 
   useEffect(() => {
     axios.get(`${BASE_URL}/driver/get-all-shelters`).then((response) => {
-      console.log(response.data.Shelters);
       setShelters(response.data.Shelters);
     });
   }, []);

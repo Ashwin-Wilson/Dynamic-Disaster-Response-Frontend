@@ -103,7 +103,19 @@ const FamilyRegistrationForm = ({ isOpen, onClose }) => {
       },
     ],
   });
-
+  useEffect(() => {
+    axios
+      .get(`${BASE_URL}/family/get-family-by-id`, {
+        headers: { familyId: localStorage.getItem("familyId") },
+      })
+      .then((response) => {
+        console.log(response.data.family);
+        setFormData({ ...formData, ...response.data.family });
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  }, []);
   if (!isOpen) return null;
 
   const handleAddFamilyMember = () => {
@@ -755,7 +767,11 @@ const FamilyRegistrationForm = ({ isOpen, onClose }) => {
                   <input
                     type="tel"
                     className="w-full bg-slate-800/50 border border-slate-700 rounded-md p-2 text-white"
-                    value={formData.primary_contact.phone}
+                    value={
+                      formData.primary_contact.phone
+                        ? formData.primary_contact.phone
+                        : 0
+                    }
                     onChange={(e) =>
                       setFormData({
                         ...formData,
