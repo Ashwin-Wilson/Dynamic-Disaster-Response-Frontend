@@ -166,8 +166,6 @@ const CareTakerDashboard = () => {
             <h1 className="text-2xl font-bold">Shelter Caretaker Dashboard</h1>
           </div>
           <div className="flex items-center gap-4">
-            <Bell className="w-6 h-6 text-gray-400 hover:text-purple-500 cursor-pointer" />
-            <Settings className="w-6 h-6 text-gray-400 hover:text-purple-500 cursor-pointer" />
             <LogOut
               onClick={handleLogout}
               className="w-6 h-6 text-gray-400 hover:text-purple-500 cursor-pointer"

@@ -89,8 +89,6 @@ const DriverDashboard = () => {
             <h1 className="text-xl sm:text-2xl font-bold">Driver Dashboard</h1>
           </div>
           <div className="flex items-center gap-4">
-            <Bell className="w-5 h-5 sm:w-6 sm:h-6 text-gray-400 hover:text-yellow-500 cursor-pointer" />
-            <Settings className="w-5 h-5 sm:w-6 sm:h-6 text-gray-400 hover:text-yellow-500 cursor-pointer" />
             <LogOut
               className="w-5 h-5 sm:w-6 sm:h-6 text-gray-400 hover:text-yellow-500 cursor-pointer"
               onClick={() => {

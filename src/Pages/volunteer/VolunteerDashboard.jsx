@@ -163,8 +163,6 @@ const VolunteerDashboard = () => {
             <h1 className="text-2xl font-bold">Volunteer Dashboard</h1>
           </div>
           <div className="flex items-center gap-4">
-            <Bell className="w-6 h-6 text-gray-400 hover:text-green-500 cursor-pointer" />
-            <Settings className="w-6 h-6 text-gray-400 hover:text-green-500 cursor-pointer" />
             <LogOut
               className="w-6 h-6 text-gray-400 hover:text-green-500 cursor-pointer"
               onClick={() => {
