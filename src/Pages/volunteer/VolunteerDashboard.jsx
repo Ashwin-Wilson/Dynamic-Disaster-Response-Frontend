@@ -31,6 +31,7 @@ const VolunteerDashboard = () => {
   const [shelterCount, setShelterCount] = useState(3);
   const [volunteerCount, setVolunteerCount] = useState(3);
   const [roadBlockLoc, setRoadBlockLoc] = useState(null);
+  const [reloadMap, setReloadMap] = useState(false);
   const [roadBlock, setRoadBlock] = useState({
     volunteerId: localStorage.getItem("volunteerId"),
     locaiton: {
@@ -285,6 +286,8 @@ const VolunteerDashboard = () => {
                       )
                       .then((response) => {
                         console.log(response.message);
+                        alert("Block Reported");
+                        setReloadMap(!reloadMap);
                       })
                       .catch((error) => {
                         console.log(error);
@@ -298,7 +301,11 @@ const VolunteerDashboard = () => {
               </button>
             </div>
 
-            <MapView setRoadBlock={setRoadBlock} roadBlock={roadBlock} />
+            <MapView
+              setRoadBlock={setRoadBlock}
+              roadBlock={roadBlock}
+              reloadMap={reloadMap}
+            />
           </div>
         </div>
 
@@ -372,7 +379,7 @@ const createCustomMarker = (color1, color2) => {
 };
 
 //local components
-const MapView = ({ roadBlock, setRoadBlock }) => {
+const MapView = ({ roadBlock, setRoadBlock, reloadMap }) => {
   //map dependencies
   const [disasterLocation, setDisasterLocation] = useState([
     {
@@ -487,7 +494,7 @@ const MapView = ({ roadBlock, setRoadBlock }) => {
         }),
       ]);
     });
-  }, []);
+  }, [reloadMap]);
 
   useEffect(() => {
     const olaMaps = new OlaMaps({
@@ -521,7 +528,7 @@ const MapView = ({ roadBlock, setRoadBlock }) => {
       });
       setrMarkerLoc(lngLat);
     }
-    rMarker.on("drag", onDrag);
+    rMarker.on("dragend", onDrag);
 
     myMap.on("load", () => {
       //To add multiple disaster markers, marker clustering
@@ -772,7 +779,7 @@ const MapView = ({ roadBlock, setRoadBlock }) => {
         },
       });
     });
-  }, [disasterLocation, familyLoc, blockLoc]);
+  }, [disasterLocation, familyLoc, blockLoc, reloadMap]);
   return (
     <div
       id="map"

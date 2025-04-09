@@ -147,9 +147,6 @@ const DriverDashboard = () => {
                 >
                   {isOnline ? "Stop Shift" : "Start Shift"}
                 </button>
-                <button className="w-full bg-red-500/10 text-red-500 py-2 rounded-lg font-semibold hover:bg-red-500/20 transition-colors">
-                  Report Vehicle Issue
-                </button>
               </div>
             </div>
 
@@ -186,7 +183,7 @@ const DriverDashboard = () => {
           <div className="lg:col-span-2 bg-[#1e2538] rounded-lg shadow-lg p-4 sm:p-6">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-3">
               <h3 className="text-lg font-semibold">Route Map</h3>
-              <button className="flex items-center gap-2 bg-blue-500/10 text-blue-500 px-4 py-2 rounded-lg hover:bg-blue-500/20 transition-colors">
+              <button className="flex items-center gap-2 bg-blue-500/10 text-blue-500 px-4 py-2 rounded-lg  transition-colors">
                 <Navigation2 className="w-4 h-4" />
                 Navigate
               </button>
